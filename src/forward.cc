@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.5 2002/04/12 21:22:30 evertonm Exp $
+  $Id: forward.cc,v 1.6 2002/04/13 05:05:39 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -512,7 +512,7 @@ int tcp_listen(const struct ip_addr *ip, int *port, int queue)
   {
     int one = 1;
     
-    ONVERBOSE(syslog(LOG_DEBUG, "Setting SO_REUSEADDR for TCP socket port %d", prt));
+    ONVERBOSE(syslog(LOG_DEBUG, "Setting SO_REUSEADDR for TCP listening socket on port %d", prt));
 
     if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char *) &one, sizeof(one)) == -1)
       syslog(LOG_WARNING, "tcp_listen(): Can't allow reuse of local addresses: setsockopt(SO_REUSEADDR) failed: %m") ;
@@ -563,7 +563,7 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
   unsigned int cli_sa_len = sizeof(cli_sa);
 
   /*
-   * Accept new client.
+   * Accept new client on "csd"
    */
   int csd = accept(sd, (struct sockaddr *) &cli_sa, &cli_sa_len);
   if (csd < 0) {
@@ -573,103 +573,29 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
 	
   int cli_port = ntohs(cli_sa.sin_port);
   ONVERBOSE(syslog(LOG_DEBUG, "TCP connection from %s:%d", inet_ntoa(cli_sa.sin_addr), cli_port));
-
-  /*
-   * Open socket for remote host
-   */
-  int rsd = socket(PF_INET, SOCK_STREAM, get_protonumber(P_TCP));
-  if (rsd == -1) {
-    syslog(LOG_ERR, "mother_socket: Can't create TCP socket: %m");
-    return;
-  }
-  DEBUGFD(syslog(LOG_DEBUG, "mother_socket: socket open: FD %d", rsd));
-
-  /*
-   * Bind to user-supplied source address
-   *
-   * NOTE: This overrides transparent proxying.
-   */
-  if (src) {
-
-    if (transparent_proxy)
-      syslog(LOG_WARNING, "User-supplied source-address overriding transparent proxying for TCP socket");
-
-    struct sockaddr_in local_sa;  
-    unsigned int local_sa_len = sizeof(local_sa);
-    local_sa.sin_family = PF_INET;
-    local_sa.sin_port   = htons(0);
-    local_sa.sin_addr.s_addr = *((unsigned int *) src->addr);
-
-    ONVERBOSE(syslog(LOG_INFO, "mother_socket: Binding to local source address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
-
-    /*
-     * Bind local socket to user-supplied source address
-     */
-    if (bind(rsd, (struct sockaddr *) &local_sa, local_sa_len)) {
-      syslog(LOG_ERR, "mother_socket: Can't bind TCP socket to local source address: %s:%d: %m", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port));
-      socket_close(rsd);
-      return;
-    }
-
-  }
-  
-  else 
-
-    /*
-     * Perform transparent proxy
-     *
-     * NOTE: User-supplied source address overrides transparent proxying.
-     */
-    if (transparent_proxy) {
-      
-      struct sockaddr_in local_sa;  
-      unsigned int local_sa_len = sizeof(local_sa);
-      
-      /*
-       * Copy client address
-       */
-      memcpy(&local_sa, &cli_sa, cli_sa_len);
-      local_sa.sin_port = htons(0);
-      
-      ONVERBOSE(syslog(LOG_INFO, "mother_socket: Transparent proxy - Binding to local address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
-      
-      /*
-       * Bind local socket to client address
-       */
-      if (bind(rsd, (struct sockaddr *) &local_sa, local_sa_len)) {
-	syslog(LOG_ERR, "mother_socket: Can't bind TCP socket to client address: %m: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port));
-	socket_close(rsd);
-	return;
-      }
-      
-    } /* else if (transparent_proxy) */
   
   /*
-   * Connect to destination.
+   * Check client address (ip, port).
    */
   struct ip_addr ip;
   ip.addr = (char *) &(cli_sa.sin_addr.s_addr);
   ip.len  = addr_len;
 
-  /*
-   * Check client address (ip, port).
-   */
   host_map *hm = tcp_match(map_list, &ip, cli_port);
   if (!hm) {
     ONVERBOSE(syslog(LOG_DEBUG, "Address miss"));
     socket_close(csd);
-    socket_close(rsd);
     return;
   }
   ONVERBOSE(syslog(LOG_DEBUG, "Address match"));
 
   /*
-   * Connect to destination
+   * Connect to destination on "rsd"
    */
-  if (hm->pipe(rsd, &ip, cli_port)) {
+  int rsd = -1;
+  if (hm->pipe(&rsd, &cli_sa, cli_sa_len, &ip, cli_port, src)) {
     ONVERBOSE(syslog(LOG_DEBUG, "Could not connect to remote destination"));
     socket_close(csd);
-    socket_close(rsd);
     return;
   }
   

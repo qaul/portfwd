@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.7 2002/04/13 03:33:55 evertonm Exp $
+  $Id: host_map.cc,v 1.8 2002/04/13 05:05:39 evertonm Exp $
  */
 
 #include <string.h>
@@ -44,10 +44,85 @@ void host_map::show() const
   }
 }
 
+static int make_tcp_outgoing_socket(const struct ip_addr *src, const struct sockaddr_in *cli_sa, unsigned int cli_sa_len)
+{
+  /*
+   * Open socket for remote host
+   */
+  int rsd = socket(PF_INET, SOCK_STREAM, get_protonumber(P_TCP));
+  if (rsd == -1) {
+    syslog(LOG_ERR, "make_tcp_outgoing_socket: Can't create TCP socket: %m");
+    return -1;
+  }
+  DEBUGFD(syslog(LOG_DEBUG, "make_tcp_outgoing_socket: socket open: FD %d", rsd));
+
+  /*
+   * Bind to user-supplied source address
+   *
+   * NOTE: This overrides transparent proxying.
+   */
+  if (src) {
+
+    if (transparent_proxy)
+      syslog(LOG_WARNING, "User-supplied source-address overriding transparent proxying for TCP socket");
+
+    struct sockaddr_in local_sa;  
+    unsigned int local_sa_len = sizeof(local_sa);
+    local_sa.sin_family = PF_INET;
+    local_sa.sin_port   = htons(0);
+    local_sa.sin_addr.s_addr = *((unsigned int *) src->addr);
+
+    ONVERBOSE(syslog(LOG_INFO, "make_tcp_outgoing_socket: Binding to local source address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
+
+    /*
+     * Bind local socket to user-supplied source address
+     */
+    if (bind(rsd, (struct sockaddr *) &local_sa, local_sa_len)) {
+      syslog(LOG_ERR, "make_tcp_outgoing_socket: Can't bind TCP socket to local source address: %s:%d: %m", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port));
+      socket_close(rsd);
+      return -1;
+    }
+
+  }
+  
+  else 
+
+    /*
+     * Perform transparent proxy
+     *
+     * NOTE: User-supplied source address overrides transparent proxying.
+     */
+    if (transparent_proxy) {
+      
+      struct sockaddr_in local_sa;  
+      unsigned int local_sa_len = sizeof(local_sa);
+      
+      /*
+       * Copy client address
+       */
+      memcpy(&local_sa, cli_sa, cli_sa_len);
+      local_sa.sin_port = htons(0);
+      
+      ONVERBOSE(syslog(LOG_INFO, "make_tcp_outgoing_socket: Transparent proxy - Binding to local address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
+      
+      /*
+       * Bind local socket to client address
+       */
+      if (bind(rsd, (struct sockaddr *) &local_sa, local_sa_len)) {
+	syslog(LOG_ERR, "make_tcp_outgoing_socket: Can't bind TCP socket to client address: %m: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port));
+	socket_close(rsd);
+	return -1;
+      }
+      
+    } /* else if (transparent_proxy) */
+
+  return rsd;
+}
+
 /*
  * Returns -1 on failure; 0 on success.
  */
-int host_map::pipe(int sd, const struct ip_addr *ip, int port)
+int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_sa_len, const struct ip_addr *ip, int port, const struct ip_addr *src)
 {
   const int tmp_len = 32;
   char tmp[tmp_len];
@@ -62,7 +137,12 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
   for (;;) {
 
     /*
-     * Get current address
+     * Create outgoing socket
+     */
+    int rsd = make_tcp_outgoing_socket(src, cli_sa, cli_sa_len);
+
+    /*
+     * Get current destination address
      */
     to_addr *dst_addr = dst_list->get_at(next_dst_index);
     const struct ip_addr *dst_ip  = dst_addr->get_addr();
@@ -79,10 +159,12 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
     memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
 
     /*
-     * Try current address
+     * Try current destination address
      */
-    if (connect(sd, (struct sockaddr *) &sa, sizeof(sa))) {
+    if (connect(rsd, (struct sockaddr *) &sa, sizeof(sa))) {
       ONVERBOSE(syslog(LOG_WARNING, "TCP pipe: Can't connect %s:%d to %s:%d: %m", tmp, port, inet_ntoa(sa.sin_addr), dst_port));
+
+      close(rsd);
 
       /*
        * Switch to next address
@@ -96,13 +178,18 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
       continue;
     }
 
+    /*
+     * Return outgoing socket
+     */
+    *sd = rsd;
+
     ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: connected: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
     
     break;
   }
 
   /*
-   * Switch to next address
+   * Switch to next destination address
    */
   next_dst_index = (next_dst_index + 1) % dst_list->get_size();
   

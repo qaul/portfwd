@@ -1,7 +1,7 @@
 /*
   host_map.hpp
 
-  $Id: host_map.hpp,v 1.3 2002/04/12 21:22:30 evertonm Exp $
+  $Id: host_map.hpp,v 1.4 2002/04/13 05:05:39 evertonm Exp $
  */
 
 #ifndef HOST_MAP_HPP
@@ -29,7 +29,8 @@ public:
 
   void show() const;
 
-  int pipe(int sd, const struct ip_addr *ip, int port);
+  int pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_sa_len, const struct ip_addr *ip, int port, const struct ip_addr *source);
+
   void udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_sa, const struct ip_addr *ip, int port, const char *buf, int buf_len);
 
   int tcp_match(const struct ip_addr *ip, int port) const;
