@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: README,v 1.3 2001/11/19 19:34:43 evertonm Exp $
+# $Id: README,v 1.4 2002/04/20 20:27:33 evertonm Exp $
 #
 
 LICENSE
@@ -36,7 +36,7 @@ INTRODUCTION
 BUILDING
 
         This program has been compiled with gcc 2.95.2 and tested
-        under Debian Potato (Linux 2.2.17), but it may work on other
+        under Debian Potato (Linux 2.2.19), but it may work on other
         plataforms as well.
 
         As of version 0.18, Portfwd has been ported for FreeBSD and
@@ -137,6 +137,11 @@ COMMAND LINE OPTIONS
         Syntax Help
 
                 Option -h provides brief help on command line syntax.
+
+	Running in Foreground
+
+		The -g switch prevents Portfwd from going to
+		background.
 
         Configuration File
 
