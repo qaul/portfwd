@@ -24,6 +24,7 @@ CHANGES:
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
 
++ Applied Patrick Tullmann's patch to compile on FreeBSD-5.0-CURRENT.
 + Applied Marc Merlin's patch.
 
 ----
