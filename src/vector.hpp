@@ -1,6 +1,6 @@
 // vector.hpp
 //
-// $Id: vector.hpp,v 1.2 2002/04/13 17:21:27 evertonm Exp $
+// $Id: vector.hpp,v 1.3 2002/09/06 17:52:30 evertonm Exp $
 
 
 #ifndef VECTOR_HPP
@@ -8,7 +8,7 @@
 
 #include <syslog.h>
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 #include "iterator.hpp"
 #include "util.hpp"
 
