@@ -1,0 +1,11 @@
+Package: portfwd
+Version: 0.21-1
+Architecture: i386
+Maintainer:  Everton da Silva Marques <evertonm@my-deja.com>
+Depends: libc6, libstdc++2.10 
+Description: Portfwd forwarding daemon.
+	Portfwd forwards specified TCP connections and/or UDP segments
+	to remote hosts. There is special support for FTP forwarding
+	and transparent proxy.
+Section: unstable
+Priority: extra

@@ -1,0 +1,9 @@
+#! /bin/sh
+
+portfwd_init=/etc/init.d/portfwd.init
+
+[ -x "$portfwd_init" ] && $portfwd_init stop
+
+if [ purge = "$1" ]; then
+	update-rc.d $portfwd_init remove >/dev/null
+fi
