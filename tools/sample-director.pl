@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-# $Id: sample-director.pl,v 1.3 2002/05/06 04:33:59 evertonm Exp $
+# $Id: sample-director.pl,v 1.4 2002/05/07 03:15:37 evertonm Exp $
 #
 # sample-director.pl remote_port_number
 
@@ -47,9 +47,13 @@ while (<STDIN>) {
     &log(" IN: $_");
 
     #
-    # Identify source of incoming connection
+    # Identify incoming connection
+    # 
+    # Client from "source_address:source_port" is
+    # opening communication to "local_address:local_port"
+    # with "protocol".
     #    
-    my ($protocol, $source_address, $source_port) = split;
+    my ($protocol, $source_address, $source_port, $local_address, $local_port) = split;
 
     #
     # Reject connections other than from localhost

@@ -1,12 +1,16 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.4 2002/05/06 04:33:59 evertonm Exp $
+  $Id: director.cc,v 1.5 2002/05/07 03:15:36 evertonm Exp $
  */
 
 #include <syslog.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 
 #include "signal.h"
 #include "util.h"
@@ -94,6 +98,14 @@ void director::run(char *argv[])
     syslog(LOG_ERR, "Director child: fatal: could not attach stdout to unix domain socket: %m");
     exit(1);
   }
+
+  /*
+   * Restore default SIGPIPE disposition
+   */
+  void (*prev_handler)(int);
+  prev_handler = signal(SIGPIPE, SIG_DFL);
+  if (prev_handler == SIG_ERR)
+    syslog(LOG_ERR, "Director child: signal() failed restoring default SIGPIPE disposition: %m");
 
   ONVERBOSE(syslog(LOG_DEBUG, "Invoking director: %s", argv[0]));
 
@@ -186,7 +198,10 @@ void director::show() const
   syslog(LOG_INFO, "[%s]", args);
 }
 
-int director::get_addr(const char *protoname, const struct ip_addr **addr, int *prt)
+int director::get_addr(const char *protoname, 
+	const struct sockaddr_in *cli_sa, 
+	const struct sockaddr_in *local_cli_sa, 
+	const struct ip_addr **addr, int *prt)
 {
   int fd0 = fd[0];
 
@@ -199,6 +214,16 @@ int director::get_addr(const char *protoname, const struct ip_addr **addr, int *
     return -1;
   }
 
+  int cli_src_port = htons(cli_sa->sin_port);
+  int cli_loc_port = htons(local_cli_sa->sin_port);
+
+  const int ADDR_STR_BUF_SZ = 128;
+  char cli_src_addr[ADDR_STR_BUF_SZ];
+  char cli_loc_addr[ADDR_STR_BUF_SZ];
+
+  safe_strcpy(cli_src_addr, inet_ntoa(cli_sa->sin_addr), ADDR_STR_BUF_SZ);
+  safe_strcpy(cli_loc_addr, inet_ntoa(local_cli_sa->sin_addr), ADDR_STR_BUF_SZ);
+
   /*
    * Write query
    */
@@ -206,7 +231,7 @@ int director::get_addr(const char *protoname, const struct ip_addr **addr, int *
   const int WR_BUF_SZ = 128;
   char wr_buf[WR_BUF_SZ];
 
-  int len = snprintf(wr_buf, WR_BUF_SZ, "%s %s %s\n", protoname, "a.a.a.a", "pppp");
+  int len = snprintf(wr_buf, WR_BUF_SZ, "%s %s %d %s %d\n", protoname, cli_src_addr, cli_src_port, cli_loc_addr, cli_loc_port);
   if (len == -1) {
     syslog(LOG_ERR, "director::get_addr() failed due to snprintf() overflow");
     return -1;

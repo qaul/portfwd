@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.6 2002/04/13 05:05:39 evertonm Exp $
+  $Id: forward.cc,v 1.7 2002/05/07 03:15:36 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -572,6 +572,18 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
   }
 	
   int cli_port = ntohs(cli_sa.sin_port);
+
+  /*
+   * Get local address
+   */
+  struct sockaddr_in local_cli_sa;
+  unsigned int local_cli_sa_len = sizeof(local_cli_sa);
+  if (getsockname(sd, (struct sockaddr *) &local_cli_sa, &local_cli_sa_len)) {
+    syslog(LOG_ERR, "mother_socket(): Can't get local sockname: %m");
+    socket_close(csd);
+    return;
+  }
+
   ONVERBOSE(syslog(LOG_DEBUG, "TCP connection from %s:%d", inet_ntoa(cli_sa.sin_addr), cli_port));
   
   /*
@@ -593,7 +605,7 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
    * Connect to destination on "rsd"
    */
   int rsd = -1;
-  if (hm->pipe(&rsd, &cli_sa, cli_sa_len, &ip, cli_port, src)) {
+  if (hm->pipe(&rsd, &cli_sa, cli_sa_len, &ip, cli_port, src, &local_cli_sa)) {
     ONVERBOSE(syslog(LOG_DEBUG, "Could not connect to remote destination"));
     socket_close(csd);
     return;
@@ -704,7 +716,11 @@ void tcp_forward(const struct ip_addr *listen, const struct ip_addr *source, vec
 
 }
 
-void do_udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_sa, vector<host_map*> *map_list, const char *buf, int buf_len)
+static void do_udp_forward(const struct ip_addr *source, 
+			   const struct sockaddr_in *cli_sa, 
+			   const struct sockaddr_in *local_cli_sa,
+			   vector<host_map*> *map_list, 
+			   const char *buf, int buf_len)
 {
   int            port = ntohs(cli_sa->sin_port);
   struct ip_addr ip;
@@ -720,7 +736,7 @@ void do_udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_
   for (it.start(); it.cont(); it.next()) {
     host_map *hm = it.get();
     if (hm->udp_match(&ip, port, buf, buf_len)) {
-      hm->udp_forward(source, cli_sa, &ip, port, buf, buf_len);
+      hm->udp_forward(source, cli_sa, local_cli_sa, &ip, port, buf, buf_len);
       break;
     }
   }
@@ -823,7 +839,17 @@ void udp_forward(const struct ip_addr *listen_addr, const struct ip_addr *source
 	  continue;
 	}
 
-	do_udp_forward(source, &cli_sa, map_list, buf, rd);
+	/*
+	 * Get local address
+	 */
+	struct sockaddr_in local_cli_sa;
+	unsigned int local_cli_sa_len = sizeof(local_cli_sa);
+	if (getsockname(fd, (struct sockaddr *) &local_cli_sa, &local_cli_sa_len)) {
+	  syslog(LOG_ERR, "udp_forward(): Can't get local sockname: %m");
+	  memset(&local_cli_sa, 0, local_cli_sa_len);
+	}
+
+	do_udp_forward(source, &cli_sa, &local_cli_sa, map_list, buf, rd);
       }
 
   } /* main loop */

@@ -1,7 +1,7 @@
 /*
   dst_addr.hpp
   
-  $Id: dst_addr.hpp,v 1.2 2002/05/06 03:02:40 evertonm Exp $
+  $Id: dst_addr.hpp,v 1.3 2002/05/07 03:15:36 evertonm Exp $
  */
 
 #ifndef DST_ADDR_HPP
@@ -29,7 +29,11 @@ public:
     }
 
   void show() const;
-  int get_addr(const char *protoname, const struct ip_addr **addr, int *prt);
+
+  int get_addr(const char *protoname, 
+	const struct sockaddr_in *cli_sa, 
+	const struct sockaddr_in *local_cli_sa, 
+	const struct ip_addr **addr, int *prt);
 };
 
 #endif /* DST_ADDR_HPP */

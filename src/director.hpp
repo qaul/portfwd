@@ -1,7 +1,7 @@
 /*
   director.hpp
   
-  $Id: director.hpp,v 1.3 2002/05/06 03:02:40 evertonm Exp $
+  $Id: director.hpp,v 1.4 2002/05/07 03:15:36 evertonm Exp $
  */
 
 #ifndef DIRECTOR_HPP
@@ -31,7 +31,11 @@ public:
   director(const char *str);
 
   void show() const;
-  int get_addr(const char *protoname, const struct ip_addr **addr, int *prt);
+
+  int get_addr(const char *protoname, 
+	const struct sockaddr_in *cli_sa, 
+	const struct sockaddr_in *local_cli_sa, 
+	const struct ip_addr **addr, int *prt);
 };
 
 #endif /* DIRECTOR_HPP */

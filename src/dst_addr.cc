@@ -1,7 +1,7 @@
 /*
   dst_addr.cc
 
-  $Id: dst_addr.cc,v 1.2 2002/05/06 03:02:40 evertonm Exp $
+  $Id: dst_addr.cc,v 1.3 2002/05/07 03:15:36 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -19,7 +19,10 @@ void dst_addr::show() const
   syslog(LOG_INFO, ":%d", port);
 }
 
-int dst_addr::get_addr(const char *protoname, const struct ip_addr **addr, int *prt)
+int dst_addr::get_addr(const char *protoname, 
+	const struct sockaddr_in *cli_sa, 
+	const struct sockaddr_in *local_cli_sa, 
+	const struct ip_addr **addr, int *prt)
 {
   if (name) {
     free(address.addr);

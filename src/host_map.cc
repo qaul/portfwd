@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.13 2002/05/06 03:02:40 evertonm Exp $
+  $Id: host_map.cc,v 1.14 2002/05/07 03:15:36 evertonm Exp $
  */
 
 #include <string.h>
@@ -129,7 +129,10 @@ static int make_tcp_outgoing_socket(const struct ip_addr *src, const struct sock
 /*
  * Returns -1 on failure; 0 on success.
  */
-int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_sa_len, const struct ip_addr *ip, int port, const struct ip_addr *src)
+int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, 
+		   unsigned int cli_sa_len, const struct ip_addr *ip, 
+		   int port, const struct ip_addr *src, 
+		   const struct sockaddr_in *local_cli_sa)
 {
   const int tmp_len = 32;
   char tmp[tmp_len];
@@ -152,7 +155,7 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
 
     const struct ip_addr *dst_ip;
     int dst_port;
-    if (dst_addr->get_addr(get_protoname(P_TCP), &dst_ip, &dst_port)) {
+    if (dst_addr->get_addr(get_protoname(P_TCP), cli_sa, local_cli_sa, &dst_ip, &dst_port)) {
       syslog(LOG_ERR, "TCP pipe: Could not load next destination address for: %s:%d", tmp, port);
       return -1;
     }
@@ -242,7 +245,11 @@ int host_map::tcp_match(const struct ip_addr *ip, int port) const
   return 0;
 }
 
-void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_sa, const struct ip_addr *ip, int port, const char *buf, int buf_len)
+void host_map::udp_forward(const struct ip_addr *source, 
+			   const struct sockaddr_in *cli_sa, 
+			   const struct sockaddr_in *local_cli_sa,
+			   const struct ip_addr *ip, int port, 
+			   const char *buf, int buf_len)
 {
   /*
    * Get next destination address
@@ -251,7 +258,7 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
 
   const struct ip_addr *dst_ip;
   int dst_port;
-  if (dst_addr->get_addr(get_protoname(P_UDP), &dst_ip, &dst_port)) {
+  if (dst_addr->get_addr(get_protoname(P_UDP), cli_sa, local_cli_sa, &dst_ip, &dst_port)) {
 
     const int tmp_len = 32;
     char tmp[tmp_len];
