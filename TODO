@@ -27,7 +27,9 @@ CHANGES:
 0.25
 ----
 
-- External destination selector.
+/ External destination selector.
+  - First invokation is hanging.
+  - Pass actual incoming source address to get_addr();
 
 ----
 0.24

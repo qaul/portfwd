@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-# $Id: sample-director.pl,v 1.2 2002/05/06 03:02:40 evertonm Exp $
+# $Id: sample-director.pl,v 1.3 2002/05/06 04:33:59 evertonm Exp $
 #
 # sample-director.pl remote_port_number
 
@@ -18,24 +18,33 @@ $| = 1;
 
 sub log {
     my $line = $_[0];
-    system("echo $line >> /tmp/sample-director-$$.log");
+    system("echo `date` [$$] $line >> /tmp/sample-director-`date +%Y%m%d`.log");
 }
 
-sub reponse {
+sub response {
     my $line = $_[0];
 
-    &log("OUT: $_");
+    &log("OUT: $line");
 
     print $line, "\n";
 }
 
+sub catch_term {
+    my $signame = shift;
+    &log('Received SIGTERM - exiting');
+    exit(0);
+}
+$SIG{TERM} = \&catch_term;
+
+&log('Start');
+
 #
 # Infinite loop
 #
-while (<>) {
+while (<STDIN>) {
     chomp;
 
-    &log("IN: $_");
+    &log(" IN: $_");
 
     #
     # Identify source of incoming connection
@@ -55,3 +64,6 @@ while (<>) {
     #
     &response("forward localhost 2000");
 }
+
+&log("Can't read from stdin - exiting");
+

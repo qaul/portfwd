@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.5 2002/04/20 04:32:35 evertonm Exp $
+  $Id: util.cc,v 1.6 2002/05/06 04:33:59 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -143,6 +143,8 @@ int std_to_null() {
 
 int daemonize()
 {
+  ONVERBOSE(syslog(LOG_INFO, "Daemonizing"));
+  
   /*
    * Tenta desconectar terminal de controle.
    */

@@ -1,7 +1,7 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.3 2002/05/06 03:02:40 evertonm Exp $
+  $Id: director.cc,v 1.4 2002/05/06 04:33:59 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -25,12 +25,18 @@ void director::close_sockets()
 
 void director::kill_child()
 {
+  if (child == -1)
+    return;
+
   kill(child, SIGTERM);
   child = -1;
 }
 
 void director::run(char *argv[])
 {
+
+  ONVERBOSE(syslog(LOG_DEBUG, "Spawning director: %s", argv[0]));
+
   /*
    * Create unix domain socket
    */
@@ -89,6 +95,8 @@ void director::run(char *argv[])
     exit(1);
   }
 
+  ONVERBOSE(syslog(LOG_DEBUG, "Invoking director: %s", argv[0]));
+
   /*
    * Invoke external director program
    */
@@ -104,7 +112,7 @@ int director::spawn()
   char **argv = 0;
   char *dir_str = safe_strdup(args);
 
-  ONVERBOSE(syslog(LOG_DEBUG, "Spawning director: %s", args));
+  ONVERBOSE(syslog(LOG_DEBUG, "Parsing director: %s", args));
 
   /*
    * Parse director string into argv
@@ -147,6 +155,8 @@ int director::spawn()
    */
   run(argv);
 
+  result = 0;
+
 clean:
   free(dir_str);
 
@@ -180,9 +190,14 @@ int director::get_addr(const char *protoname, const struct ip_addr **addr, int *
 {
   int fd0 = fd[0];
 
-  if (fd0 == -1)
+  ONVERBOSE2(syslog(LOG_DEBUG, "director::get_addr()"));
+
+  if (fd0 == -1) {
     if (spawn())
-      return -1;
+      syslog(LOG_ERR, "director::get_addr(): spawn() failed");
+
+    return -1;
+  }
 
   /*
    * Write query
