@@ -24,6 +24,8 @@ CHANGES:
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
 
++ Applied Marc Merlin's patch.
+
 ----
 0.21
 ----

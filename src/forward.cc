@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.1 2001/05/15 00:25:04 evertonm Exp $
+  $Id: forward.cc,v 1.2 2001/08/10 01:24:54 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -504,25 +504,39 @@ int tcp_listen(const struct ip_addr *ip, int *port, int queue)
   sa.sin_addr.s_addr = *((unsigned int *) ip->addr);
   memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
 
+#ifndef NO_SO_REUSEADDR
+  int on = 1 ;
+
+  ONVERBOSE(syslog(LOG_DEBUG, "Setting SO_REUSEADDR for socket %d/tcp", prt));
+  if ( setsockopt( sd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof( on ) ) == -1 )
+  {
+     syslog( LOG_WARNING, "setsockopt SO_REUSEADDR failed (%m)" ) ;
+  }
+#endif
+
+
   if (bind(sd, (struct sockaddr *) &sa, sa_len)) {
     syslog(LOG_ERR, "listen: Can't bind TCP socket: %m: %s:%d", inet_ntoa(sa.sin_addr), prt);
+    fprintf(stderr, "listen: Can't bind TCP socket: %m: %s:%d", inet_ntoa(sa.sin_addr), prt);
     socket_close(sd);
     return -1;
   }
 
   if (getsockname(sd, (struct sockaddr *) &sa, &sa_len)) {
     syslog(LOG_ERR, "listen: Can't get local sockname: %m");
+    fprintf(stderr, "listen: Can't get local sockname: %m");
     return -1;
   }
   prt = ntohs(sa.sin_port);
 
   if (listen(sd, queue)) {
     syslog(LOG_ERR, "listen: Can't listen TCP socket: %m");
+    fprintf(stderr, "listen: Can't listen TCP socket: %m");
     socket_close(sd);
     return -1;
   }
 
-  ONVERBOSE(syslog(LOG_DEBUG, "Listening TCP connection on %s:%d", inet_ntoa(sa.sin_addr), prt));
+  syslog(LOG_DEBUG, "Listening TCP connection on %s:%d", inet_ntoa(sa.sin_addr), prt);
 
   if (port)
     *port = prt;
