@@ -1,12 +1,13 @@
 /*
   solve.cc
 
-  $Id: solve.cc,v 1.1 2001/05/15 00:25:00 evertonm Exp $
+  $Id: solve.cc,v 1.2 2001/09/14 14:30:22 evertonm Exp $
  */
 
 #include <stdlib.h>
 #include <ctype.h>
 #include <netdb.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <syslog.h>
 #include <string.h>
