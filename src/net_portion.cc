@@ -1,7 +1,7 @@
 /*
   net_portion.cc
 
-  $Id: net_portion.cc,v 1.1 2001/05/15 00:24:59 evertonm Exp $
+  $Id: net_portion.cc,v 1.2 2002/05/05 03:30:56 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -55,7 +55,7 @@ int net_portion::owns(const struct ip_addr *ip) const
       return 0;
 
   /*
-   * left = mask_len % 8 = numero de zeros `a esquerda
+   * left = mask_len % 8 = numero de uns `a esquerda
    */
   left = mask_len & 7;
   if (!left)

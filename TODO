@@ -28,6 +28,8 @@ CHANGES:
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
 
++ Fix: Check for failure on creation of tcp outgoing socket.
+
 ----
 0.23
 ----

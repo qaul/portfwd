@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.10 2002/04/15 05:29:22 evertonm Exp $
+  $Id: host_map.cc,v 1.11 2002/05/05 03:30:56 evertonm Exp $
  */
 
 #include <string.h>
@@ -144,11 +144,6 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
   for (;;) {
 
     /*
-     * Create outgoing socket
-     */
-    int rsd = make_tcp_outgoing_socket(src, cli_sa, cli_sa_len);
-
-    /*
      * Get current destination address
      */
     to_addr *dst_addr = dst_list->get_at(next_dst_index);
@@ -158,7 +153,20 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
     safe_strcpy(tmp, addrtostr(ip), tmp_len); 
 
     ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: trying: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+
+    /*
+     * Create outgoing socket
+     */
+    int rsd = make_tcp_outgoing_socket(src, cli_sa, cli_sa_len);
+    if (rsd < 0) {
+      syslog(LOG_ERR, "TCP pipe: Could not create outgoing socket");
+      return -1;
+    }
     
+    /*
+     * Put current destination address in a "sockaddr_in" struct
+     */
+
     struct sockaddr_in sa;
     sa.sin_family      = PF_INET;
     sa.sin_port        = htons(dst_port);
@@ -171,12 +179,19 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
     if (connect(rsd, (struct sockaddr *) &sa, sizeof(sa))) {
       ONVERBOSE(syslog(LOG_WARNING, "TCP pipe: Can't connect %s:%d to %s:%d: %m", tmp, port, inet_ntoa(sa.sin_addr), dst_port));
 
-      close(rsd);
+      /*
+       * Close the socket, as it can't be reused
+       */
+      close(rsd); 
 
       /*
        * Switch to next address
        */
       next_dst_index = (next_dst_index + 1) % dst_list->get_size();
+
+      /*
+       * If all addresses were tried without success, give up
+       */
       if (next_dst_index == last_dst_index) {
 	syslog(LOG_ERR, "TCP pipe: Can't forward incoming connection from %s:%d to any destination", tmp, port);
 	return -1;
@@ -184,6 +199,10 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
 
       continue;
     }
+
+    /*
+     * Here we have a good outgoing connection on "rsd"
+     */
 
     /*
      * Return outgoing socket
@@ -197,6 +216,7 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
 
   /*
    * Switch to next destination address
+   * (left ready for the next incoming connection)
    */
   next_dst_index = (next_dst_index + 1) % dst_list->get_size();
   
