@@ -1,6 +1,6 @@
 // vector.hpp
 //
-// $Id: vector.hpp,v 1.3 2002/09/06 17:52:30 evertonm Exp $
+// $Id: vector.hpp,v 1.4 2002/09/06 18:04:04 evertonm Exp $
 
 
 #ifndef VECTOR_HPP
@@ -52,7 +52,7 @@ public:
   T *past_end_ptr() const;
   static T *next_ptr(T *i);
 
-  friend ostream& operator << <T> (ostream& out, const vector& v);
+  friend std::ostream& operator << <T> (std::ostream& out, const vector& v);
 };
 
 template <class T>
@@ -267,7 +267,7 @@ inline T *vector<T>::next_ptr(T *i)
 }
 
 template <class T>
-ostream& operator << (ostream& out, const vector<T>& v)
+std::ostream& operator << (std::ostream& out, const vector<T>& v)
 {
   out << "(" << v.get_size() << "," << v.get_capacity() << ")";
 
