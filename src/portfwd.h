@@ -1,7 +1,7 @@
 /*
   portfwd.h
 
-  $Id: portfwd.h,v 1.3 2002/04/15 04:15:51 evertonm Exp $
+  $Id: portfwd.h,v 1.4 2002/04/20 04:32:35 evertonm Exp $
  */
 
 #ifndef PORTFWD_H
@@ -19,6 +19,7 @@ extern int transparent_proxy;
 #endif
 
 extern int on_the_fly_dns;
+extern int foreground;
 
 #endif /* PORTFWD_H */
 

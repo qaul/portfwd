@@ -1,7 +1,7 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.4 2002/04/15 04:15:51 evertonm Exp $
+  $Id: portfwd.cc,v 1.5 2002/04/20 04:32:35 evertonm Exp $
  */
 
 
@@ -36,6 +36,7 @@ int transparent_proxy = 0;
 #endif 
 
 int on_the_fly_dns = 0;
+int foreground = 0;
 
 void usage(FILE *out) 
 {
@@ -50,6 +51,7 @@ void usage(FILE *out)
 #endif
 
 	       "       -f               | --on-the-fly-dns\n"
+	       "       -g               | --foreground\n"
 	       "       -c <config-file> | --config <config-file>\n",
 	  prog);
 }
@@ -78,6 +80,7 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
 #endif 
 
     {"on-the-fly-dns", 0, 0, 'f'},
+    {"foreground", 0, 0, 'g'},
     {"config", 1, 0, 'c'},
     {0, 0, 0, 0}
   };
@@ -86,7 +89,7 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
 
   for (;;) {
 		 
-    opt = getopt_long(argc, (char ** const) argv, "hvdtfc:", long_options, &option_index);
+    opt = getopt_long(argc, (char ** const) argv, "hvdtfgc:", long_options, &option_index);
     if (opt == -1)
       break;
 
@@ -111,6 +114,9 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
 
     case 'f':
       ++on_the_fly_dns;
+      break;
+    case 'g':
+      ++foreground;
       break;
     case 'c':
       if (*config) {
@@ -279,13 +285,17 @@ int main(int argc, const char *argv[])
 
   ONVERBOSE(syslog(LOG_INFO, "On the fly DNS mode: %s (%d)", on_the_fly_dns ? "on" : "off", on_the_fly_dns));
 
+  ONVERBOSE(syslog(LOG_INFO, "Foreground: %s (%d)", foreground ? "on" : "off", foreground));
+
   /*
    * Go to background.
    */
-  int dmz = daemonize();
-  if (dmz) {
-    syslog(LOG_ERR, "daemonize() failed: %d", dmz);
-    exit(1);
+  if (!foreground) {
+    int dmz = daemonize();
+    if (dmz) {
+      syslog(LOG_ERR, "daemonize() failed: %d", dmz);
+      exit(1);
+    }
   }
 
   /*

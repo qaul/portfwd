@@ -5,6 +5,8 @@ TODO:
   . could not reproduce yet
   . maybe fixed in 0.16 SIGPIPE change?
   . some reports suggest this was fixed in 0.16 (not sure though)
+- program reported to choke under load
+  . could not reproduce yet
 - improve bind-addr config syntax
 - non-forking version with support to forwarding port ranges?
 - save master-process PID to a file
@@ -12,7 +14,7 @@ TODO:
 - close sockets before exiting on SIGTERM
 - transparent proxy for linux kernel 2.4.x
 - passive ftp support for linux kernel 2.4.x
-- program choking under load (bug report at http://portfwd.sf.net)?
+  
 
 
 CHANGES:
@@ -30,6 +32,7 @@ CHANGES:
 0.23
 ----
 
++ Option -g prevents Portfwd from forking into background.
 + Compilation under systems lacking MSG_PROXY.
 + Allow multiple destination addresses for simple round-robin load balancing.
   (See cfg/load-balance.cfg)

@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.4 2002/04/15 04:15:51 evertonm Exp $
+  $Id: util.cc,v 1.5 2002/04/20 04:32:35 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -162,18 +162,19 @@ int daemonize()
    */
   pid_t pid = fork();
   if (pid) {
-    /* Parent */
     if (pid < 0) {
       syslog(LOG_ERR, "daemonize(): fork() failed");
       return -1;
     }
+
+    /* 
+     * Parent exits
+     */
     exit(0);
   }
-
   /*
-   * Libera as permissoes dos arquivos criados pelo processo.
+   * Child proceeds
    */
-  umask(0);
 
   return 0;
 }
