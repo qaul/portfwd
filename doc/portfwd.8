@@ -1,0 +1,78 @@
+.\" -*-Nroff-*-
+.\" $Id: portfwd.8,v 1.1 2001/05/15 00:24:55 evertonm Exp $
+.\""
+.TH Portfwd 8 2001-03-26 "The Port Forwarding Daemon"
+.\""
+.SH NAME
+Portfwd \- Port forwarding daemon
+.SH SYNOPSIS
+.B portfwd
+-h
+.br
+.B portfwd
+-v
+.br
+.B portfwd
+[-d ...] [-t] [ -c
+.I "config-file"
+]
+.SH "DESCRIPTION"
+This manual page documents briefly the
+.BR Portfwd
+program.
+.PP
+.B Portfwd
+stands for port forwarding daemon. It's a small userland tool which
+forwards incoming TCP connections and/or UDP datagrams to remote
+hosts. There is support for FTP forwarding, transparent proxy and a
+few other minor features.
+.PP
+This author's English skills are very bad as he's not a native speaker
+of that language -- please feel free to contribute fixes for this page
+if you can.
+.SH OPTIONS
+The program follows the usual GNU command line syntax, with long
+options starting with two dashes (`-').
+A summary of options is included below.
+.TP
+.B \-h, \-\-help
+Shows summary of options.
+.TP
+.B \-v, \-\-version
+Shows program version.
+.TP
+.B \-d, \-\-debug
+This option increases logging verbosity for debug. Up to 3 switches
+are meaningful. Failure messages are sent to the system log under
+.B daemon
+facility.
+.TP
+.B \-t, \-\-transparent\-proxy
+This switch enables transparent proxying. If you intend to forward
+data to hosts behind your masquerading firewall, you probably want
+this option turned on; it allows your servers to see true IP addresses
+of clients.
+.TP
+.B \-c, \-\-config config\-file
+This argument allows specification of a configuration file other than
+the hard-coded default.
+.I config\-file 
+is the full pathname to the configuration file.
+.SH FILES
+.TP
+.I /etc/portfwd.cfg
+Default configuration file.
+.SH SIGNALS
+.TP
+.I SIGTERM
+If sent to Portfwd master process (the one with lowest PID), the TERM
+signal terminates the whole forwarding job.
+.SH "SEE ALSO"
+.TP
+.IR "http://sourceforge.net/projects/portfwd/"
+Portfwd web site at SourceForge.
+.SH AUTHOR
+Manual page loosely written by
+.br
+Éverton da Silva Marques <evertonm@my-deja.com>
+

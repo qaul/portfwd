@@ -1,0 +1,26 @@
+#
+# CREDITS
+#
+# $Id: CREDITS,v 1.1 2001/05/15 00:24:40 evertonm Exp $
+#
+
+The following people has made important contribution to Portfwd.
+
+David Ryan <dsryan@snowy.net.au>
+
+Matti Kivio <matti.kivio@masterplanet.fi> 
+
+Bishop Clark <bishop@sco.com>
+
+Peter Surda <psurda@byte.at> 
+
+Matthew Danish <mdanish@andrew.cmu.edu>
+  - FreeBSD port, autoconf/automake support
+
+Rachel Polanskis <r.polanskis@nepean.uws.edu.au>
+  - Solaris port
+
+Alexander Bartolich <alba@users.sourceforge.net>
+  - #include patch for RedHat 7.0
+
+Marc Merlin <marc@merlins.org>

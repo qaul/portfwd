@@ -1,0 +1,105 @@
+
+TODO:
+
+- fix reported random crash
+  (could not reproduce yet)
+  (maybe fixed in 0.16 SIGPIPE change?)
+  (some reports suggest this was fixed in 0.16)
+
+- improve bind-addr config syntax
+
+- non-forking version with support to forwarding port ranges?
+
+- save master-process PID to a file
+
+- support for generic IP forwarding
+
+- close sockets before exiting on SIGTERM
+
+- transparent proxy control per ruleset
+
+CHANGES:
+
+----
+0.20
+----
+
+- Marc Merlin <marc@merlins.org> suggestions:
+  - Issue fatal errors to stderr.
+  - Try to bind to local address multiple times (specified by user).
+  - Fix Debian init script.
+
+----
+0.19
+----
+
++ Alexander Bartolich #include's patch for RedHat 7.0.
++ README, COPYING, CREDITS, TODO added to automake.
++ Automake documentation directory moved to $(prefix)/doc/portfwd.
+
+----
+0.18
+----
+
++ Paul D. Smith patches for non-local builds.
++ FreeBSD port and automake/autoconf support (thanks to Matthew Danish).
++ Solaris port (thanks to Rachel Polanskis).
++ Small fix -- changed incorrect htons(0) to ntohs(0).
++ Minimal man page.
+
+----
+0.17
+----
+
++ Transparent proxy support: command line switch: -t
+  + for TCP
+  + for UDP
+
+----
+0.16
+----
+
++ Some code cleanup.
++ Switch -v now issues the Portfwd version. The debug behavior was replaced
+  by -d.
++ The debug switch (now -d) doesn't prevent Portfwd from daemonizing.
++ Forwarders ignore SIGPIPE, maybe fixing the unreproduced, reported,
+  random crash bug.
++ Added debug levels. More -d switches, more verbose the logging.
+
+----
+0.15 
+----
+
++ Decrease counter (maxfd) if possible, after freeing file descriptors.
+
+----
+0.14 
+----
+
++ File descriptors leakage for ftp forwarding fixed. 
+  (Thanks to Peter Surda)
++ Added some directory structure for the distribution.
+
+----
+0.13 
+----
+
++ Warning messages fixed. It should compile on newer gcc now.
+
+----
+0.12
+----
+
++ FAQ
+
+----
+0.11
+----
+
++ Fix daemonize(): warning only message on tty detaching.
++ Remove tools from Makefile.
+
+----
+?.??
+----

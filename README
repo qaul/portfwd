@@ -1,0 +1,186 @@
+#
+# README
+#
+# portfwd - Port Forwarding Daemon
+#
+# $Id: README,v 1.1 2001/05/15 00:24:41 evertonm Exp $
+#
+
+LICENSE
+
+        Portfwd - Port Forwarding Daemon
+
+        This program is free software; you can redistribute it and/or
+        modify it under the terms of the GNU General Public License as
+        published by the Free Software Foundation; either version 2 of
+        the License, or (at your option) any later version.
+
+        This program is distributed in the hope that it will be
+        useful, but WITHOUT ANY WARRANTY; without even the implied
+        warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+        PURPOSE.  See the GNU General Public License for more details.
+
+        You should have received a copy of the GNU General Public
+        License along with this program; if not, write to the Free
+        Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+        MA 02111-1307 USA
+
+INTRODUCTION
+
+        Portfwd stands for port forwarding daemon. It's a small C++
+        utility which forwards incoming TCP connections and/or UDP
+        packets to remote hosts.
+
+        My apologies for my poor English. Corrections are welcome.
+
+BUILDING
+
+        This program has been compiled with gcc 2.95.2 and tested
+        under Debian Potato (Linux 2.2.17), but it may work on other
+        plataforms as well.
+
+        As of version 0.18, Portfwd has been ported for FreeBSD and
+        Solaris and there is support for autoconf/automake.
+
+        In order to compile:
+
+                ./configure
+                make
+
+        A file named 'portfwd' should be produced.
+
+INSTALL
+
+        To install 'portfwd' under /usr/local/sbin:
+
+                make install
+
+        Otherwise, just copy 'portfwd' to a suitable location.
+
+CONFIG
+
+        The grammar for the configuration file is described in the
+        'conf.txt' file. Examples can be found in the 'cfg' directory.
+
+        For a quick experiment, use the following redirector, then
+        test with "telnet 127.0.0.1 10000". It should give you telnet
+        access to your local machine.
+
+        /*
+         * telnet.cfg
+         *
+         * Forward all connections on TCP port 10000 to 127.0.0.1:23
+         */
+        tcp { 10000 { => 127.0.0.1:23 } }
+        /*
+         * eof: telnet.cfg
+         */
+
+        Below you can see a more complete example using most features
+        of portfwd.
+
+        /*
+         * example.cfg
+         */     
+        user  nobody
+        group nobody
+        
+        tcp /* TCP connections */
+        { 
+                /*
+                 * Connections on port 12000 from subnet localhost/24 and
+                 * ports in the range 0-5000 are forwarded to 127.0.0.1:23.
+                 * Anything else goes to localhost:80.
+                 */
+                12000 { 
+                        localhost/24:+5000  => 127.0.0.1:23;
+                        /* anything else */ => localhost:80
+                };
+        
+                /*
+                 * On port 11000, connections from address localhost, any 
+                 * port, are forwarded to 127.0.0.1:telnet.
+                 */
+                11000 { localhost => 127.0.0.1:telnet };
+        
+                10000 
+                ftp-active-mode-on 127.0.0.1
+                ftp-passive-mode-on 127.0.0.1
+                { => localhost:ftp }
+        }
+        
+        udp /* UDP packets */
+        {
+                /*
+                 * All packets on port 10000 are forwarded to 127.0.0.1:11000.
+                 */
+                10000 { => 127.0.0.1:11000 }
+        }
+        /*
+         * eof: example.cfg
+         */
+
+RUNNING BASICS
+
+        1. START
+
+        Type:
+        portfwd -c <path_to_config_file>
+
+        2. STOP
+
+        Send a TERM signal to the Portfwd master process (the one with
+        lowest PID).
+
+COMMAND LINE OPTIONS
+
+        Syntax Help
+
+                Option -h provides brief help on command line syntax.
+
+        Configuration File
+
+                Use -c <config_file_path> to specify the location of
+                your configuration file.
+
+        Transparent Proxy
+
+                The -t switch enables transparent proxying; i.e. IP
+                address of outgoing data are "faked" to match those
+                from incoming data. If you plan to forward data to
+                hosts behind your firewall, you probably want this
+                option turned on, as it allows for your servers to see
+                original addresses of clients.
+
+                Of course, this feature requires transparent proxy
+                support compiled in your kernel.
+
+        Debugging
+
+                If the -d switch is given, portfwd will produce
+                verbose logging for debug purposes. Up to 3 switches
+                are meaningful.
+
+                Failure messages are sent to the system log under the
+                "daemon" facility.
+
+        Program Version
+
+                Portfwd version can be obtained by passing the -v
+                switch.
+
+SUPPORT
+
+        If you have further questions, please consult the FAQ.
+
+        There is a discussion board in the Portfwd web site:
+
+                http://sourceforge.net/projects/portfwd/ 
+
+        This is probably the most useful resource for Portfwd users.
+
+        Anyway, one can contact me directly at:
+
+                Everton da Silva Marques <evertonm@my-deja.com>
+
+                                 -x-

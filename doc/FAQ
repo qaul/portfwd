@@ -1,0 +1,66 @@
+#
+# FAQ
+#
+# portfwd - Port Forwarding Daemon
+#
+# $Id: FAQ,v 1.1 2001/05/15 00:24:54 evertonm Exp $
+#
+
+
+Q: How to bind to a specific address?
+
+A: Use the "bind-address" statement.
+
+	/* bind-address example */
+	
+	bind-address 10.0.0.1 /* uses 10.0.0.1 until next bind-address */
+	tcp { 
+	  2323 { => 10.0.0.2:23 };
+	  8080 { => 10.0.0.2:80 }
+	}
+	udp { 6000 { => 192.168.0.2:6000 } }
+	
+	bind-address 192.168.0.1 /* from here afterwards, use 192.168.0.1 */
+	tcp { 
+          2323 { => 10.0.0.3:23 };
+          2525 { => 192.168.0.2:25 }
+        }
+
+
+Q: How does FTP forwarding work?
+
+A: See the example below.
+
+	 ----------      -----------      ---------- 
+	 | FTP    |      | portfwd |      | FTP    |
+	 | client |      | host    |      | server |
+	 ----------      -----------      ----------
+	      |           |       |            |
+	 -----------...------   ------...-----------
+	      a           b       c            d
+
+        b = name/address of client-side interface 
+	c = name/address of server-side interface
+	
+	tcp {
+		2121
+		ftp-active-mode-on c
+		ftp-passive-mode-on b
+		{ => d:21 }
+	}
+
+
+Q: How can I debug Portfwd behavior?
+
+A: Append the "-d" switch to Portfwd command 
+   line and then watch your logs. 
+
+	Example:
+	echo "daemon.* /var/log/daemon.log" >> /etc/syslog.conf
+	touch /var/log/daemon.log
+	/etc/rc.d/init.d/syslog restart
+	tail -f /var/log/daemon.log
+	portfwd -d -c <your_config_file>
+
+
+				 -x-

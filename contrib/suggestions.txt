@@ -1,0 +1,85 @@
+
+Hi,
+
+I'm trying to switch from stone as a port forwarder to portfwd.
+If you don't know stone:
+----------------------------------------------------------------------------
+kenny:~# dpkg --status stone
+Package: stone
+Status: install ok installed
+Priority: optional
+Section: net
+Installed-Size: 124
+Maintainer: Takuo KITAME  <kitame@northeye.org> 
+Version: 2.1-1
+Depends: libc6 (> = 2.1)
+Description: TCP/IP packet repeater in the application layer.
+ TCP/IP packet repeater in the application layer.
+ It repeats TCP and UDP packets from inside to outside of a firewall, or from
+ outside to inside.
+----------------------------------------------------------------------------
+
+While portfwd  is more  configurable than  stone, it  suffers from  the same
+problem:
+If I have an opened TCP connection that is being forwarded by portfwd, and I
+restart it, I get:
+portfwd[25529]: listen: Can't bind TCP socket: Address already in use: 
+198.186.202.178:80
+portfwd[25529]: socket_close(): shutdown() on socket FD 4 failed: Transport 
+endpoint is not connected
+portfwd[25529]: Child exiting (!)
+
+This is  bad because if  a sysadmin  restarts portfwd, everything  looks ok,
+except that  one port (or  more) isn't being  forwarded, and no  one notices
+until ssomeone complains.
+
+Suggestions:
+1) If there is any fatal error (syntax of conf file or failed bind), portfwd
+   should really output this on stderr too for the sysadmin to see right away
+
+2) portfwd should have an option to retry binds once a second for a 
+   configurable number of times so that in the case above, the bind hopefully
+   succeeds eventually.
+
+Do you agree with my suggestions?
+If so,  I need to  fix our setup  fairly quickly, which  I will do  by using
+another program,  or with  a shell  script wrapper,  but if  the suggestions
+above are easy to implement and you  think you can do them fairly quickly, I
+can wait for the next version too.
+
+Let me know. Thanks in advance.
+
+
+As another suggestions,  the transparent proxying option could  be an option
+in the config file. The reason for this is that my forwarding machine is not
+my gateway, but  it can still transparently proxy udp  connections (the fact
+that the  ip of returning packets  is different doesn't prevent  things like
+syslog from working)
+
+Either way, I tried  with two portfwd and two config files  (one for TCP and
+one for UDP with -t) and I got:
+
+portfwd[30002]: UDP packet from: 198.186.202.1:3340 
+portfwd[30002]: UDP forward: 198.186.202.1:3340 =>  10.1.0.37:514
+portfwd[30002]: host_map::udp_forward: Transparent proxy - Binding to local 
+address: 198.186.202.1:0
+portfwd[30002]: host_map::udp_forward: Can't bind UDP socket to client address: 
+Cannot assign requested address: 198.186.202.1:0
+portfwd[30002]: socket_close(): shutdown() on socket FD 5 failed: Transport 
+endpoint is not connected
+
+My kernel is compiled with: CONFIG_IP_TRANSPARENT_PROXY=y
+
+Any idea why transparent proxying isn't working?
+
+Thanks,
+Marc
+
+PS: In your init script, you do killall portfwd in the stop section.  That's
+actually  a bad  idea  because  it kills  the  /etc/init.d/portfwd too,  and
+prevents the  addition of a restart  section that does stop  and start.  One
+quick  fix is  to call  your  init script  /etc/init.d/portfwd.init so  that
+killall doesn't kill it :-)
+
+Marc Merlin <marc@merlins.org>
+

@@ -1,0 +1,24 @@
+#! /bin/sh
+#
+# portfwd.init
+#
+# $Id: portfwd.init,v 1.1 2001/05/15 00:25:13 evertonm Exp $
+
+portfwd=/usr/local/sbin/portfwd
+transparent_proxy=-t
+debug=-dd
+config=/etc/portfwd.cfg
+
+case "$1" in
+    start)
+	echo "Starting portfwd"
+	$portfwd $debug $transparent_proxy -c $config
+	;;
+    stop)
+	echo "Stopping portfwd"
+	killall portfwd
+	;;
+    *)
+	echo "usage: $0 {start|stop}"
+	exit 1
+esac

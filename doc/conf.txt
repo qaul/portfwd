@@ -1,0 +1,51 @@
+#
+# conf.txt
+#
+# $Id: conf.txt,v 1.1 2001/05/15 00:24:54 evertonm Exp $
+#
+
+conf => EMPTY
+        stmt_list
+
+stmt_list => stmt
+	     stmt_list stmt
+
+stmt => entry
+        global_option
+
+global_option => "user" USER_NAME
+		 "group" GROUP_NAME
+		 "bind-address" HOST_NAME
+
+entry => "tcp" "{" map_list "}"
+         "udp" "{" map_list "}"
+
+map_list => map
+	    map_list ";" map
+
+map => port_list [ ftp_option ] "{" host_list "}"
+
+ftp_option => "ftp-active-mode-on" HOST_NAME | "ftp-passive-mode-on" HOST_NAME
+
+port_list => PORT_NAME
+	     port_list "," PORT_NAME
+
+host_list => host_map
+	     host_list ";" host_map
+
+host_map => from_list "=>" HOST_NAME ":" PORT_NAME
+
+from_list => from
+	     from_list "," from
+
+from =>  [ host_prefix ] [ ":" port_range ]
+
+host_prefix => HOST_NAME [ "/" MASK_LENGTH ]
+
+port_range => PORT_NAME
+	      PORT_NAME "+"
+	      "+" PORT_NAME
+	      PORT_NAME "+" PORT_NAME
+
+
+
