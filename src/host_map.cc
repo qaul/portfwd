@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.12 2002/05/05 08:55:52 evertonm Exp $
+  $Id: host_map.cc,v 1.13 2002/05/06 03:02:40 evertonm Exp $
  */
 
 #include <string.h>
@@ -152,7 +152,7 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
 
     const struct ip_addr *dst_ip;
     int dst_port;
-    if (dst_addr->get_addr(&dst_ip, &dst_port)) {
+    if (dst_addr->get_addr(get_protoname(P_TCP), &dst_ip, &dst_port)) {
       syslog(LOG_ERR, "TCP pipe: Could not load next destination address for: %s:%d", tmp, port);
       return -1;
     }
@@ -251,7 +251,7 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
 
   const struct ip_addr *dst_ip;
   int dst_port;
-  if (dst_addr->get_addr(&dst_ip, &dst_port)) {
+  if (dst_addr->get_addr(get_protoname(P_UDP), &dst_ip, &dst_port)) {
 
     const int tmp_len = 32;
     char tmp[tmp_len];

@@ -1,7 +1,7 @@
 /*
   solve.cc
 
-  $Id: solve.cc,v 1.2 2001/09/14 14:30:22 evertonm Exp $
+  $Id: solve.cc,v 1.3 2002/05/06 03:02:40 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -57,38 +57,89 @@ int get_protonumber(proto_t proto)
   return protonumber_tab[proto];
 }
 
-int solve_port(const char *portname, const char *protoname) {
+/*
+ * Return -1 on error.
+ */
+int solve_portnumber(const char *portname, const char *protoname) {
 
   if (isdigit(*portname))
     return atoi(portname);
 
   struct servent *se;
   se = getservbyname(portname, protoname);
-  if (!se) {
-    syslog(LOG_ERR, "Failure solving port name: %s/%s\n", portname, protoname);
-    exit(1);
-  }
+  if (!se)
+    return -1;
 
   return ntohs(se->s_port);
 }
 
-struct ip_addr solve_hostname(const char *hostname) {
-  struct hostent *he;
-  he = gethostbyname(hostname);
-  if (!he) {
-    syslog(LOG_ERR, "Can't solve hostname: %s\n", hostname);
+int solve_port(const char *portname, const char *protoname) {
+
+  int portnumber = solve_portnumber(portname, protoname);
+  if (portnumber == -1) {
+    syslog(LOG_ERR, "Failure solving port name: %s/%s\n", portname, protoname);
     exit(1);
   }
 
+  return portnumber;
+}
+
+int solve_hostname_addr(char *buf, size_t *buf_len, const char *hostname)
+{
+  /*
+   * Find address
+   */
+  struct hostent *he;
+  he = gethostbyname(hostname);
+  if (!he)
+    return 1; /* Can't solve hostname */
+
+  int blen = *buf_len; /* save buffer length */
+
+  int addr_len = he->h_length; 
+
+  *buf_len = addr_len; /* return address length */
+
+  if (addr_len > blen)
+    return 2; /* Insufficient buffer size */
+
+  /*
+   * Return address
+   */
+  memcpy(buf, *he->h_addr_list, addr_len);
+
+  return 0;
+}
+
+struct ip_addr solve_hostname(const char *hostname) {
+  const int BUF_SZ = 32;
+  char buf[BUF_SZ];
+  size_t buf_len = BUF_SZ;
+  
+  int result = solve_hostname_addr(buf, &buf_len, hostname);
+  if (result) {
+    switch (result) {
+    case 1:
+      syslog(LOG_ERR, "solve_hostname(%s): Can't solve hostnames\n", hostname);
+      break;
+    case 2:
+      syslog(LOG_ERR, "solve_hostname(%s): Insufficient buffer space for hostname address (buf_len=%d, addr_len=%d)\n", hostname, BUF_SZ, buf_len);
+      break;
+    default:
+      syslog(LOG_ERR, "solve_hostname(%s): Unexpected error: %d", hostname, result);
+    }
+    exit(1);
+  }
+  
   struct ip_addr ip;
-  ip.len = he->h_length;
-  ip.addr = (char*) malloc(ip.len);
+  ip.len = buf_len;
+  ip.addr = (char *) malloc(ip.len);
   if (!ip.addr) {
     syslog(LOG_ERR, "Can't allocate memory for address: %d bytes\n", ip.len);
     exit(1);
   }
 
-  memcpy(ip.addr, *he->h_addr_list, ip.len);
+  memcpy(ip.addr, buf, ip.len);
 
   return ip;
 }

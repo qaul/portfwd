@@ -1,22 +1,57 @@
 #! /usr/bin/perl -w
 #
-# $Id: sample-director.pl,v 1.1 2002/05/05 08:55:52 evertonm Exp $
+# $Id: sample-director.pl,v 1.2 2002/05/06 03:02:40 evertonm Exp $
 #
-# sample-director.pl default_remote_host default_remote_port
+# sample-director.pl remote_port_number
 
+#
+# As example, we've chosen to receive the remote
+# port number as command line argument. 
+#
+my $remote_port_number = $ARGV[0];
+$remote_port_number = 2000 unless defined($remote_port_number);
+
+#
+# Enable flushing
+#
 $| = 1;
 
-my ($default_remote_host, $default_remote_port) = @ARGV;
+sub log {
+    my $line = $_[0];
+    system("echo $line >> /tmp/sample-director-$$.log");
+}
 
+sub reponse {
+    my $line = $_[0];
+
+    &log("OUT: $_");
+
+    print $line, "\n";
+}
+
+#
+# Infinite loop
+#
 while (<>) {
-	chomp;
+    chomp;
 
-	my ($source_address, $source_port) = split;
+    &log("IN: $_");
 
-	if ($source_address eq '127.0.0.1') {
-		print "forward $default_remote_host $default_remote_port\n";
-		next;
-	}
+    #
+    # Identify source of incoming connection
+    #    
+    my ($protocol, $source_address, $source_port) = split;
 
-	print "reject\n";
+    #
+    # Reject connections other than from localhost
+    #
+    if ($source_address ne '127.0.0.1') {
+	&response("reject");
+	next;
+    }
+
+    #
+    # Forward connections to localhost:2000
+    #
+    &response("forward localhost 2000");
 }
