@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.9 2002/04/15 04:15:51 evertonm Exp $
+  $Id: host_map.cc,v 1.10 2002/04/15 05:29:22 evertonm Exp $
  */
 
 #include <string.h>
@@ -255,7 +255,6 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
 #endif /* NO_SO_BROADCAST */
 
   struct sockaddr_in local_sa;  
-  unsigned int local_sa_len = sizeof(local_sa);
 
   /*
    * Bind to user-supplied source address
@@ -289,6 +288,8 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
      * NOTE: User-supplied source address overrides transparent proxying.
      */
     if (transparent_proxy) {
+
+      unsigned int local_sa_len = sizeof(local_sa);
 
       /*
        * Copy client address
