@@ -1,7 +1,7 @@
 /*
   util.h
 
-  $Id: util.h,v 1.2 2002/04/15 04:15:51 evertonm Exp $
+  $Id: util.h,v 1.3 2002/05/07 03:58:12 evertonm Exp $
  */
 
 #ifndef UTIL_H
@@ -27,7 +27,7 @@ char* safe_strdup(const char* str);
 void safe_strcpy(char *trg, const char *src, int trg_buf_size);
 
 int cd_root();
-int close_fds();
+void close_fds();
 int std_to_null();
 int daemonize();
 

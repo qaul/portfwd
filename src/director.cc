@@ -1,7 +1,7 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.5 2002/05/07 03:15:36 evertonm Exp $
+  $Id: director.cc,v 1.6 2002/05/07 03:58:12 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -86,6 +86,8 @@ void director::run(char *argv[])
   /*
    * Actual child
    */
+
+  close_fds();
 
   /* Attach stdin to fd[1] */
   if (dup2(fd[1], 0) == -1) {
@@ -349,7 +351,7 @@ int director::get_addr(const char *protoname,
    */
 
   if (addr_buf_len > address_buf_size) {
-    syslog(LOG_ERR, "Insufficient space in local buffer for address (local_buffer_size=%d address_length=%d)", address_buf_size, addr_buf_len);
+    syslog(LOG_ERR, "Insufficient space in local buffer for address (local_buffer_size=%d < address_length=%d)", address_buf_size, addr_buf_len);
     return -1;
   }
 

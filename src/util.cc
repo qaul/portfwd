@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.6 2002/05/06 04:33:59 evertonm Exp $
+  $Id: util.cc,v 1.7 2002/05/07 03:58:12 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -83,27 +83,21 @@ int cd_root() {
   return 0;
 }
 
-int close_fds() {
-  /*
-   * Obtem numero maximo de arquivos que podemos abrir.
-   */
+void close_fds() {
+  const int LOCAL_MAXFD = 2048;
+
   struct rlimit rl;
-  if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-    syslog(LOG_ERR, "close_fds(): can't get file limit: %m");
-    return -1;
-  }
+  if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
+    rl.rlim_max = LOCAL_MAXFD;
   
-  /*
-   * Fecha todos os descritores abertos.
-   */
   unsigned int fd;
   if (rl.rlim_max == RLIM_INFINITY)
-    rl.rlim_max = 1024;
+    rl.rlim_max = LOCAL_MAXFD;
+
   for (fd = 0; fd < rl.rlim_max; ++fd)
     close(fd);
-  errno = 0; /* close() em fd invalido */
 
-  return 0;
+  errno = 0; /* close() on invalid fd */
 }
 
 int std_to_null() {
