@@ -1,7 +1,7 @@
 /*
   director.hpp
   
-  $Id: director.hpp,v 1.1 2002/05/05 08:55:52 evertonm Exp $
+  $Id: director.hpp,v 1.2 2002/05/05 10:53:12 evertonm Exp $
  */
 
 #ifndef DIRECTOR_HPP
@@ -17,6 +17,13 @@ class director : public to_addr
 {
 private:
   char *args;
+  int fd[2];
+  pid_t child;
+
+  void kill_child();
+  void close_sockets();
+  void run(char *argv[]);
+  int spawn();
 
 public:
   director(const char *str);

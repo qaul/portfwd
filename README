@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: README,v 1.5 2002/05/05 04:39:42 evertonm Exp $
+# $Id: README,v 1.6 2002/05/05 10:53:12 evertonm Exp $
 #
 
 LICENSE
@@ -68,6 +68,9 @@ FEATURES
 
         -- Portfwd allows simple round-robin load-balancing through
         specification of multiple destinations.
+
+	-- Support for external destination selector program (aka
+	"director").
 
 LIMITATIONS
 
