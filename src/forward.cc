@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.4 2002/03/26 03:51:14 evertonm Exp $
+  $Id: forward.cc,v 1.5 2002/04/12 21:22:30 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -54,9 +54,9 @@ int tcp_connect(const struct ip_addr *ip, int port)
 /*
  * Returns host_map success; NULL on failure.
  */
-const host_map *tcp_match(const vector<host_map*> *map_list, const struct ip_addr *ip, int port)
+host_map *tcp_match(const vector<host_map*> *map_list, const struct ip_addr *ip, int port)
 {
-  const host_map *hm;
+  host_map *hm;
   iterator<vector<host_map*>,host_map*> it(*map_list);
   for (it.start(); it.cont(); it.next()) {
     hm = it.get();
@@ -654,7 +654,7 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
   /*
    * Check client address (ip, port).
    */
-  const host_map *hm = tcp_match(map_list, &ip, cli_port);
+  host_map *hm = tcp_match(map_list, &ip, cli_port);
   if (!hm) {
     ONVERBOSE(syslog(LOG_DEBUG, "Address miss"));
     socket_close(csd);
@@ -792,7 +792,7 @@ void do_udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_
 
   iterator<vector<host_map*>,host_map*> it(*map_list);
   for (it.start(); it.cont(); it.next()) {
-    const host_map *hm = it.get();
+    host_map *hm = it.get();
     if (hm->udp_match(&ip, port, buf, buf_len)) {
       hm->udp_forward(source, cli_sa, &ip, port, buf, buf_len);
       break;

@@ -12,7 +12,11 @@ TODO:
 - close sockets before exiting on SIGTERM
 - transparent proxy for linux kernel 2.4.x
 - passive ftp support for linux kernel 2.4.x
-- compilation broken in solaris 7
+- compilation broken on systems lacking MSG_PROXY
+  - solaris 7
+  - AIX
+  - others
+
 
 CHANGES:
 
@@ -20,7 +24,7 @@ CHANGES:
 0.24
 ----
 
-- Marc Merlin <marc@merlins.org> suggestions:
+- Marc Merlin suggestions:
   - Transparent proxy control per ruleset.
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
@@ -29,6 +33,9 @@ CHANGES:
 0.23
 ----
 
++ Allow multiple destination addresses for simple round-robin load balancing.
+  + for TCP
+  + for UDP
 + Allow specification of local source address for outgoing connections.
   Note: this overrides the transparent proxying.
   + for TCP
@@ -52,9 +59,9 @@ CHANGES:
 0.20
 ----
 
-+ Zachary Frederick <zfrederick@tuscano.com> suggestion:
++ Zachary Frederick suggestion:
   + On-the-fly name resolution.
-+ Marc Merlin <marc@merlins.org> suggestion:
++ Marc Merlin suggestion:
   + Fix Debian init script to prevent it from killing itself.
 
 ----

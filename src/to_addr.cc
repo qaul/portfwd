@@ -1,7 +1,7 @@
 /*
   to_addr.cc
 
-  $Id: to_addr.cc,v 1.3 2001/07/11 23:59:56 evertonm Exp $
+  $Id: to_addr.cc,v 1.4 2002/04/12 21:22:30 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -18,7 +18,7 @@ void to_addr::show() const
   syslog(LOG_INFO, ":%d", port);
 }
 
-const struct ip_addr *to_addr::get_addr() const
+const struct ip_addr *to_addr::get_addr()
 {
   if (name) {
     free(address.addr);

@@ -1,7 +1,7 @@
 /*
   to_addr.hpp
   
-  $Id: to_addr.hpp,v 1.2 2001/07/08 04:25:48 evertonm Exp $
+  $Id: to_addr.hpp,v 1.3 2002/04/12 21:22:30 evertonm Exp $
  */
 
 #ifndef TO_ADDR_HPP
@@ -29,7 +29,7 @@ public:
 
   void show() const;
 
-  const struct ip_addr *get_addr() const;
+  const struct ip_addr *get_addr();
   int get_port() const;
 };
 

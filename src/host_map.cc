@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.4 2002/03/26 03:51:14 evertonm Exp $
+  $Id: host_map.cc,v 1.5 2002/04/12 21:22:30 evertonm Exp $
  */
 
 #include <string.h>
@@ -29,35 +29,78 @@ void host_map::show() const
     syslog(LOG_INFO, ", ");
     it.get()->show();
   }
+
   syslog(LOG_INFO, " => ");
-  dst_addr->show(); 
+
+  iterator<vector<to_addr*>,to_addr*> it2(*dst_list);
+  it2.start();
+  if (it2.cont()) {
+    it2.get()->show();
+    it2.next();
+  }
+  for (; it2.cont(); it2.next()) {
+    syslog(LOG_INFO, ", ");
+    it2.get()->show();
+  }
 }
 
 /*
  * Returns -1 on failure; 0 on success.
  */
-int host_map::pipe(int sd, const struct ip_addr *ip, int port) const
+int host_map::pipe(int sd, const struct ip_addr *ip, int port)
 {
-  const struct ip_addr *dst_ip  = dst_addr->get_addr();
-  int                  dst_port = dst_addr->get_port();
 
-  const int tmp_len = 32;
-  char tmp[tmp_len];
+  /*
+   * Scan all destination addresses
+   */
 
-  ONVERBOSE(safe_strcpy(tmp, addrtostr(ip), tmp_len)); 
-  ONVERBOSE(syslog(LOG_DEBUG, "TCP pipe: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+  /* Save starting address */
+  int last_dst_index = next_dst_index;
 
-  struct sockaddr_in sa;
-  sa.sin_family      = PF_INET;
-  sa.sin_port        = htons(dst_port);
-  sa.sin_addr.s_addr = *((unsigned int *) dst_ip->addr);
-  memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
+  for (;;) {
 
-  if (connect(sd, (struct sockaddr *) &sa, sizeof(sa))) {
-    syslog(LOG_ERR, "pipe: Can't connect to %s:%d: %m", inet_ntoa(sa.sin_addr), dst_port);
-    return -1;
+    /*
+     * Get current address
+     */
+    to_addr *dst_addr = dst_list->get_at(next_dst_index);
+    const struct ip_addr *dst_ip  = dst_addr->get_addr();
+    int                  dst_port = dst_addr->get_port();
+    
+    const int tmp_len = 32;
+    char tmp[tmp_len];
+    safe_strcpy(tmp, addrtostr(ip), tmp_len); 
+
+    ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: trying: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+    
+    struct sockaddr_in sa;
+    sa.sin_family      = PF_INET;
+    sa.sin_port        = htons(dst_port);
+    sa.sin_addr.s_addr = *((unsigned int *) dst_ip->addr);
+    memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
+
+    /*
+     * Try current address
+     */
+    if (connect(sd, (struct sockaddr *) &sa, sizeof(sa))) {
+      ONVERBOSE(syslog(LOG_WARNING, "TCP pipe: Can't connect %s:%d to %s:%d: %m", tmp, port, inet_ntoa(sa.sin_addr), dst_port));
+
+      /*
+       * Switch to next address
+       */
+      next_dst_index = (next_dst_index + 1) % dst_list->get_size();
+      if (next_dst_index == last_dst_index) {
+	syslog(LOG_ERR, "TCP pipe: Can't forward incoming connection from %s:%d to any destination", tmp, port);
+	return -1;
+      }
+
+      continue;
+    }
+
+    ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: connected: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+    
+    break;
   }
-
+  
   return 0;
 }
 
@@ -75,16 +118,22 @@ int host_map::tcp_match(const struct ip_addr *ip, int port) const
   return 0;
 }
 
-void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_sa, const struct ip_addr *ip, int port, const char *buf, int buf_len) const
+void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_sa, const struct ip_addr *ip, int port, const char *buf, int buf_len)
 {
+  /*
+   * Get next destination address
+   */
+  to_addr *dst_addr = dst_list->get_at(next_dst_index);
   const struct ip_addr *dst_ip  = dst_addr->get_addr();
   int                  dst_port = dst_addr->get_port();
 
-  const int tmp_len = 32;
-  char tmp[tmp_len];
+  {
+    const int tmp_len = 32;
+    char tmp[tmp_len];
 
-  ONVERBOSE(safe_strcpy(tmp, addrtostr(ip), tmp_len)); 
-  ONVERBOSE(syslog(LOG_DEBUG, "UDP forward: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+    ONVERBOSE(safe_strcpy(tmp, addrtostr(ip), tmp_len)); 
+    ONVERBOSE(syslog(LOG_DEBUG, "UDP forward: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+  }
 
   int rsd = socket(PF_INET, SOCK_DGRAM, get_protonumber(P_UDP));
   if (rsd == -1) {
@@ -167,6 +216,11 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
 
   if (close(rsd))
     syslog(LOG_WARNING, "forward: close() on socket failed: %m");
+
+  /*
+   * Switch to next address
+   */
+  next_dst_index = (next_dst_index + 1) % dst_list->get_size();
 }
 
 /*
