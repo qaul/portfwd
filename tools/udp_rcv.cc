@@ -5,7 +5,7 @@
 
   udp_rcv <port>
 
-  $Id: udp_rcv.cc,v 1.1 2001/05/15 00:25:13 evertonm Exp $
+  $Id: udp_rcv.cc,v 1.2 2002/09/18 18:42:07 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
   struct       sockaddr_in sa;
   char         buf[BUF_SZ];
   int          rd;
-  unsigned int sa_len, cli_sa_len;
+  unsigned int sa_len;
+  socklen_t cli_sa_len;
   struct sockaddr_in cli_sa;
 
   cli_sa_len = sizeof(cli_sa);
@@ -76,3 +77,4 @@ int main(int argc, char *argv[])
 
   return 0;
 }
+
