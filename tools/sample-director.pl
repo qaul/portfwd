@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-# $Id: sample-director.pl,v 1.4 2002/05/07 03:15:37 evertonm Exp $
+# $Id: sample-director.pl,v 1.5 2002/05/08 03:50:03 evertonm Exp $
 #
 # sample-director.pl remote_port_number
 
@@ -64,9 +64,9 @@ while (<STDIN>) {
     }
 
     #
-    # Forward connections to localhost:2000
+    # Forward connections to localhost:$remote_port_number
     #
-    &response("forward localhost 2000");
+    &response("forward localhost $remote_port_number");
 }
 
 &log("Can't read from stdin - exiting");

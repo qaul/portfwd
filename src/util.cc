@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.7 2002/05/07 03:58:12 evertonm Exp $
+  $Id: util.cc,v 1.8 2002/05/08 03:50:03 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -83,7 +83,7 @@ int cd_root() {
   return 0;
 }
 
-void close_fds() {
+void close_fds(int first_fds) {
   const int LOCAL_MAXFD = 2048;
 
   struct rlimit rl;
@@ -94,7 +94,7 @@ void close_fds() {
   if (rl.rlim_max == RLIM_INFINITY)
     rl.rlim_max = LOCAL_MAXFD;
 
-  for (fd = 0; fd < rl.rlim_max; ++fd)
+  for (fd = first_fds; fd < rl.rlim_max; ++fd)
     close(fd);
 
   errno = 0; /* close() on invalid fd */

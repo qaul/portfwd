@@ -30,7 +30,6 @@ CHANGES:
 + External destination selector.
   + First invokation is hanging.
   + Pass actual incoming source address to get_addr()
-  - Testing.
 
 ----
 0.24

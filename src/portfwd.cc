@@ -1,7 +1,7 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.5 2002/04/20 04:32:35 evertonm Exp $
+  $Id: portfwd.cc,v 1.6 2002/05/08 03:50:03 evertonm Exp $
  */
 
 
@@ -262,7 +262,7 @@ int main(int argc, const char *argv[])
   /*
    * Close file descriptors.
    */
-  close_fds();
+  close_fds(0);
 
   /*
    * Connect standard IO to /dev/null.

@@ -1,7 +1,7 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.6 2002/05/07 03:58:12 evertonm Exp $
+  $Id: director.cc,v 1.7 2002/05/08 03:50:03 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -87,8 +87,6 @@ void director::run(char *argv[])
    * Actual child
    */
 
-  close_fds();
-
   /* Attach stdin to fd[1] */
   if (dup2(fd[1], 0) == -1) {
     syslog(LOG_ERR, "Director child: fatal: could not attach stdin to unix domain socket: %m");
@@ -114,6 +112,9 @@ void director::run(char *argv[])
   /*
    * Invoke external director program
    */
+
+  close_fds(2); /* release all file descriptors */
+
   execv(argv[0], argv);
 
   syslog(LOG_ERR, "Director child PID %d: fatal: execv(%s) failed: %m", getpid(), argv[0]);
@@ -207,8 +208,6 @@ int director::get_addr(const char *protoname,
 {
   int fd0 = fd[0];
 
-  ONVERBOSE2(syslog(LOG_DEBUG, "director::get_addr()"));
-
   if (fd0 == -1) {
     if (spawn())
       syslog(LOG_ERR, "director::get_addr(): spawn() failed");
@@ -240,7 +239,6 @@ int director::get_addr(const char *protoname,
   }
 
   int wr = write(fd0, wr_buf, len);
-  
   if (wr != len) {
     if (wr == -1) {
       switch (errno) {
@@ -267,7 +265,6 @@ int director::get_addr(const char *protoname,
   char rd_buf[RD_BUF_SZ];
 
   int rd = read(fd0, rd_buf, RD_BUF_SZ);
-  
   if (rd == -1) {
     switch (errno) {
       case EBADF:
