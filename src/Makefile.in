@@ -68,12 +68,12 @@ REAL_CC = @REAL_CC@
 VERSION = @VERSION@
 YACC = @YACC@
 
-CXXFLAGS = -Wall -ggdb -O3 -DPORTFWD_CONF=\"$(sysconfdir)/portfwd.cfg\"
 CFLAGS = -Wall -ggdb -O3 -DPORTFWD_CONF=\"$(sysconfdir)/portfwd.cfg\"
+CXXFLAGS = $(CFLAGS)
 INCLUDES = -I$(top_srcdir)/src
 
 sbin_PROGRAMS = portfwd
-portfwd_SOURCES = addr.cc from_addr.cc host_map.cc portfwd.cc to_addr.cc 	entry.cc      net_portion.cc  proto_map.cc  	forward.cc  port_pair.cc  solve.cc yconf.c lexconf.c util.cc 
+portfwd_SOURCES = addr.cc from_addr.cc host_map.cc portfwd.cc 	dst_addr.cc director.cc entry.cc net_portion.cc 	proto_map.cc forward.cc  port_pair.cc  solve.cc 	yconf.c lexconf.c util.cc 
 
 
 LDADD = getopt.o getopt1.o
@@ -86,9 +86,9 @@ PROGRAMS =  $(sbin_PROGRAMS)
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
-portfwd_OBJECTS =  addr.o from_addr.o host_map.o portfwd.o to_addr.o \
-entry.o net_portion.o proto_map.o forward.o port_pair.o solve.o yconf.o \
-lexconf.o util.o
+portfwd_OBJECTS =  addr.o from_addr.o host_map.o portfwd.o dst_addr.o \
+director.o entry.o net_portion.o proto_map.o forward.o port_pair.o \
+solve.o yconf.o lexconf.o util.o
 portfwd_LDADD = $(LDADD)
 portfwd_DEPENDENCIES =  getopt.o getopt1.o
 portfwd_LDFLAGS = 
@@ -105,10 +105,10 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/addr.P .deps/entry.P .deps/forward.P \
-.deps/from_addr.P .deps/host_map.P .deps/lexconf.P .deps/net_portion.P \
-.deps/port_pair.P .deps/portfwd.P .deps/proto_map.P .deps/solve.P \
-.deps/to_addr.P .deps/util.P .deps/yconf.P
+DEP_FILES =  .deps/addr.P .deps/director.P .deps/dst_addr.P \
+.deps/entry.P .deps/forward.P .deps/from_addr.P .deps/host_map.P \
+.deps/lexconf.P .deps/net_portion.P .deps/port_pair.P .deps/portfwd.P \
+.deps/proto_map.P .deps/solve.P .deps/util.P .deps/yconf.P
 SOURCES = $(portfwd_SOURCES)
 OBJECTS = $(portfwd_OBJECTS)
 

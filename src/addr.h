@@ -1,13 +1,11 @@
 /*
   addr.h
 
-  $Id: addr.h,v 1.1 2001/05/15 00:25:00 evertonm Exp $
+  $Id: addr.h,v 1.2 2002/05/05 08:55:52 evertonm Exp $
  */
 
 #ifndef ADDR_H
 #define ADDR_H
-
-#include <stdio.h>
 
 struct ip_addr {
   char  *addr;

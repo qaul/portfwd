@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.11 2002/05/05 03:30:56 evertonm Exp $
+  $Id: host_map.cc,v 1.12 2002/05/05 08:55:52 evertonm Exp $
  */
 
 #include <string.h>
@@ -143,15 +143,20 @@ int host_map::pipe(int *sd, const struct sockaddr_in *cli_sa, unsigned int cli_s
 
   for (;;) {
 
+    safe_strcpy(tmp, addrtostr(ip), tmp_len); 
+
     /*
      * Get current destination address
      */
     to_addr *dst_addr = dst_list->get_at(next_dst_index);
-    const struct ip_addr *dst_ip  = dst_addr->get_addr();
-    int                  dst_port = dst_addr->get_port();
-    
-    safe_strcpy(tmp, addrtostr(ip), tmp_len); 
 
+    const struct ip_addr *dst_ip;
+    int dst_port;
+    if (dst_addr->get_addr(&dst_ip, &dst_port)) {
+      syslog(LOG_ERR, "TCP pipe: Could not load next destination address for: %s:%d", tmp, port);
+      return -1;
+    }
+    
     ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: trying: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
 
     /*
@@ -243,15 +248,25 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
    * Get next destination address
    */
   to_addr *dst_addr = dst_list->get_at(next_dst_index);
-  const struct ip_addr *dst_ip  = dst_addr->get_addr();
-  int                  dst_port = dst_addr->get_port();
+
+  const struct ip_addr *dst_ip;
+  int dst_port;
+  if (dst_addr->get_addr(&dst_ip, &dst_port)) {
+
+    const int tmp_len = 32;
+    char tmp[tmp_len];
+    safe_strcpy(tmp, addrtostr(ip), tmp_len); 
+    syslog(LOG_ERR, "host_map::udp_forward(): Could not load next destination address for: %s:%d", tmp, port);
+
+    return;
+  }
 
   {
     const int tmp_len = 32;
     char tmp[tmp_len];
 
     ONVERBOSE(safe_strcpy(tmp, addrtostr(ip), tmp_len)); 
-    ONVERBOSE(syslog(LOG_DEBUG, "UDP forward: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
+    ONVERBOSE(syslog(LOG_DEBUG, "host_map::udp_forward(): %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
   }
 
   int rsd = socket(PF_INET, SOCK_DGRAM, get_protonumber(P_UDP));

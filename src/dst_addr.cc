@@ -1,24 +1,25 @@
 /*
-  to_addr.cc
+  dst_addr.cc
 
-  $Id: to_addr.cc,v 1.4 2002/04/12 21:22:30 evertonm Exp $
+  $Id: dst_addr.cc,v 1.1 2002/05/05 08:55:52 evertonm Exp $
  */
 
 #include <syslog.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "util.h"
 #include "addr.h"
-#include "to_addr.hpp"
+#include "dst_addr.hpp"
 #include "solve.h"
 
-void to_addr::show() const
+void dst_addr::show() const
 {
   show_addr(&address);
   syslog(LOG_INFO, ":%d", port);
 }
 
-const struct ip_addr *to_addr::get_addr()
+int dst_addr::get_addr(const struct ip_addr **addr, int *prt)
 {
   if (name) {
     free(address.addr);
@@ -26,12 +27,10 @@ const struct ip_addr *to_addr::get_addr()
     memcpy((void *) &address, (void *) &ad, sizeof(ad));
   }
 
-  return &address;
+  *addr = &address;
+  *prt = port;
+
+  return 0;
 }
 
-int to_addr::get_port() const
-{
-  return port;
-}
-
-/* Eof: to_addr.cc */
+/* Eof: dst_addr.cc */

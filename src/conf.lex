@@ -1,7 +1,7 @@
 /*
   conf.lex
 
-  $Id: conf.lex,v 1.2 2001/11/19 19:34:44 evertonm Exp $
+  $Id: conf.lex,v 1.3 2002/05/05 08:55:52 evertonm Exp $
  */
 
 %{
@@ -21,12 +21,49 @@
 #include "yconf.h"
 #include "util.h"
 
-const int IDENT_BUF_SIZE = 64;
-
 int conf_line_number = 1;
 int comment_nesting = 0;
 
+const int IDENT_BUF_SIZE = 64;
 char conf_ident[IDENT_BUF_SIZE];
+
+const int CONF_LEX_STR_BUF_SIZE = 1024;
+char conf_lex_str_buf[CONF_LEX_STR_BUF_SIZE];
+char *conf_lex_str_end = conf_lex_str_buf + CONF_LEX_STR_BUF_SIZE;
+char *conf_lex_str_curr;
+
+static int add_str_char(char c)
+{
+  if (conf_lex_str_curr < conf_lex_str_buf)
+    return 1; /* underflow */
+
+  if (conf_lex_str_curr >= conf_lex_str_end)
+    return 2; /* overflow */
+
+  *conf_lex_str_curr = c;
+
+  ++conf_lex_str_curr;
+
+  return 0;
+}
+
+#define STR_CHAR(c)                       \
+{                                         \
+  int result = add_str_char(c);           \
+  if (result) {                           \
+    switch (result) {                     \
+    case 1:                               \
+      conf_error("string underflow");     \
+      break;                              \
+    case 2:                               \
+      conf_error("string overflow");      \
+      break;                              \
+    default:                              \
+      conf_error("unknown string error"); \
+    }                                     \
+    return trap_tk(TK_ILLEGAL);           \
+  }                                       \
+}
 
 int trap_tk(int tk)
 {
@@ -50,6 +87,7 @@ void conf_error(const char *msg)
 %array
 %option noyywrap
 %x Comment
+%x String
 
 NAME		[a-zA-Z0-9][a-zA-Z0-9_.-]*
 
@@ -97,6 +135,29 @@ source-address      return trap_tk(TK_SOURCE);
 
 [ \r\t]   	/* Ignore */
 \n		++conf_line_number;
+
+%{
+                /* Strings */
+%}
+
+"["             {
+                BEGIN(String);
+		conf_lex_str_curr = conf_lex_str_buf;
+                }
+<String>\n      {
+                ++conf_line_number;
+		STR_CHAR(*yytext);
+                }
+<String>[^\]]   STR_CHAR(*yytext);
+<String>"]"     {
+                BEGIN(INITIAL);
+		STR_CHAR('\0');
+		return trap_tk(TK_STRING);
+                }
+<String><<EOF>> {
+		conf_error("EOF at unterminated string");
+		return trap_tk(TK_ILLEGAL);
+                }
 
 %{
 		/* Comments */

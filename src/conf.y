@@ -1,7 +1,7 @@
 /*
   conf.y
 
-  $Id: conf.y,v 1.4 2002/04/12 16:16:16 evertonm Exp $
+  $Id: conf.y,v 1.5 2002/05/05 08:55:52 evertonm Exp $
 */
 
 %{
@@ -15,6 +15,8 @@
 #include "port_pair.h"
 #include "proto_map.hpp"
 #include "entry.hpp"
+#include "dst_addr.hpp"
+#include "director.hpp"
 #include "portfwd.h"
 
 /*
@@ -25,6 +27,7 @@ extern char yytext[];
 extern void show_last_token();
 extern int conf_line_number;
 extern char conf_ident[];
+extern char conf_lex_str_buf[];
 
 /*
  * Some useful constants
@@ -95,9 +98,9 @@ net_portion *use_hostprefix(char *hostname, int prefix_len)
   return new net_portion(use_hostname(hostname), prefix_len);  
 }
 
-to_addr *use_toaddr(char *hostname, int port)
+to_addr *use_dstaddr(char *hostname, int port)
 {
-  return new to_addr(on_the_fly_dns ? safe_strdup(hostname) : 0, 
+  return new dst_addr(on_the_fly_dns ? safe_strdup(hostname) : 0, 
 		     use_hostname(hostname), 
 		     port);
 }
@@ -124,6 +127,7 @@ to_addr *use_toaddr(char *hostname, int port)
 %token TK_BIND
 %token TK_LISTEN
 %token TK_SOURCE
+%token TK_STRING
 
 %token TK_ILLEGAL
 
@@ -264,8 +268,11 @@ dst_list:       dst {
 
 dst:            name TK_COLON name {
 			int port = use_port($3);   /* solve portname */
-			$$ = use_toaddr($1, port); /* new to_addr() */
-                } ;
+			$$ = use_dstaddr($1, port); /* new dst_addr() */
+                } |
+                TK_STRING {
+                        $$ = new director(conf_lex_str_buf);
+		} ;
 
 from_list:	from {
 			from_vector = new vector<from_addr*>();

@@ -1,7 +1,7 @@
 #
 # conf.txt
 #
-# $Id: conf.txt,v 1.3 2002/04/12 16:16:13 evertonm Exp $
+# $Id: conf.txt,v 1.4 2002/05/05 08:55:52 evertonm Exp $
 #
 
 conf => EMPTY
@@ -44,6 +44,7 @@ dst_list => dst
             dst_list "," dst
 
 dst => HOST_NAME ":" PORT_NAME
+       STRING
 
 from =>  [ host_prefix ] [ ":" port_range ]
 
