@@ -35,6 +35,8 @@ CHANGES:
 + Fixes for gcc 3.2: new c++ header standard and std:: namespace.
 + Portability fix for AIX, contributed by Jens Wolter.
 + Fix for undue shutdown on child-inherited socket descriptor.
++ setsid() fix for daemonize() reported by Eric Duda.
++ RPM spec file provided by Richard Zidlicky.
 
 ----
 0.25

@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/addr.cc)
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(portfwd,"0.26rc6")
+AM_INIT_AUTOMAKE(portfwd,"0.26")
 
 dnl Checks for programs.
 AC_PROG_CC

@@ -1,7 +1,7 @@
 #
 # CREDITS
 #
-# $Id: CREDITS,v 1.8 2003/02/15 03:17:12 evertonm Exp $
+# $Id: CREDITS,v 1.9 2003/12/30 17:29:44 evertonm Exp $
 #
 
 The following people has made important contribution to Portfwd. They
@@ -43,3 +43,9 @@ Jens Wolter <jens.wolter sercon.de>
 
 Bob Samway
   - Bug hunting.
+
+Richard Zidlicky <rz linux-m68k.org>
+  - RPM spec file, pkg/portfwd.spec.
+
+Eric Duda <Eric.Duda guardent.com>
+  - setsid() fix for daemonize().

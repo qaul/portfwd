@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.9 2003/02/15 03:17:15 evertonm Exp $
+  $Id: util.cc,v 1.10 2003/12/30 17:29:45 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -171,6 +171,8 @@ int daemonize()
   /*
    * Child proceeds
    */
+
+  setsid();
 
   return 0;
 }
