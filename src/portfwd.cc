@@ -1,9 +1,8 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.6 2002/05/08 03:50:03 evertonm Exp $
+  $Id: portfwd.cc,v 1.7 2002/09/07 02:27:51 evertonm Exp $
  */
-
 
 #include <stdio.h>
 #include <string.h>

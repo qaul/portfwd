@@ -367,6 +367,7 @@ uninstall-am: uninstall-info-am uninstall-sbinPROGRAMS
 	mostlyclean-generic tags uninstall uninstall-am \
 	uninstall-info-am uninstall-sbinPROGRAMS
 
+
 yconf.c: conf.y
 	$(YACC) -v -d -o $@ $<
 

@@ -9,6 +9,7 @@ portfwd_SOURCES = addr.cc from_addr.cc host_map.cc portfwd.cc \
 	yconf.c lexconf.c util.cc 
 
 LDADD = getopt.o getopt1.o
+
 yconf.c: conf.y
 	$(YACC) -v -d -o $@ $<
 

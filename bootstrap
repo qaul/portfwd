@@ -1,4 +1,7 @@
 #! /bin/sh
+
+cp getopt/getopt.h src
+
 aclocal -I config \
         && autoheader \
        && automake --foreign --add-missing \

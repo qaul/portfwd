@@ -1,0 +1,13 @@
+*** getopt.h.orig	Fri Sep  6 23:23:00 2002
+--- getopt.h	Fri Sep  6 23:18:08 2002
+***************
+*** 143,150 ****
+     differences in the consts, in stdlib.h.  To avoid compilation
+     errors, only prototype getopt for the GNU C library.  */
+  extern int getopt (int ___argc, char *const *___argv, const char *__shortopts);
+- # else /* not __GNU_LIBRARY__ */
+- extern int getopt ();
+  # endif /* __GNU_LIBRARY__ */
+  
+  # ifndef __need_getopt
+--- 143,148 ----
