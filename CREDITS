@@ -1,7 +1,7 @@
 #
 # CREDITS
 #
-# $Id: CREDITS,v 1.4 2001/09/14 14:43:54 evertonm Exp $
+# $Id: CREDITS,v 1.5 2001/09/21 13:50:16 evertonm Exp $
 #
 
 The following people has made important contribution to Portfwd. They
@@ -34,3 +34,6 @@ Zachary Frederick <zfrederick@tuscano.com>
 
 Patrick Tullmann
   - Patch to compile on FreeBSD-5.0-CURRENT.
+
+Patrik Radman
+  - Patch for UDP transparent proxy.

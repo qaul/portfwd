@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.2 2001/07/08 04:25:48 evertonm Exp $
+  $Id: host_map.cc,v 1.3 2001/09/21 13:50:16 evertonm Exp $
  */
 
 #include <string.h>
@@ -92,31 +92,27 @@ void host_map::udp_forward(const struct sockaddr_in *cli_sa, const struct ip_add
     return;
   }
 
+  /* Allow broadcast packets */
+  {
+    int one = 1;
+    setsockopt(rsd, SOL_SOCKET, SO_BROADCAST, (char *) &one, sizeof(one));
+  }
+
+  struct sockaddr_in local_sa;  
+   
   /*
    * Perform transparent proxy
    */
   if (transparent_proxy) {
 
-    struct sockaddr_in local_sa;  
     unsigned int local_sa_len = sizeof(local_sa);
 
     /*
      * Copy client address
      */
     memcpy(&local_sa, cli_sa, local_sa_len);
-    local_sa.sin_port = htons(0);
 
-    ONVERBOSE(syslog(LOG_ERR, "host_map::udp_forward: Transparent proxy - Binding to local address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
-
-    /*
-     * Bind local socket to client address
-     */
-    if (bind(rsd, (struct sockaddr *) &local_sa, local_sa_len)) {
-      syslog(LOG_ERR, "host_map::udp_forward: Can't bind UDP socket to client address: %m: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port));
-      socket_close(rsd);
-      return;
-    }
-
+    ONVERBOSE(syslog(LOG_ERR, "host_map::udp_forward: Transparent proxy - \"Binding\" to local address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
   }
 
   /*
@@ -127,8 +123,11 @@ void host_map::udp_forward(const struct sockaddr_in *cli_sa, const struct ip_add
   sa.sin_port        = htons(dst_port);
   sa.sin_addr.s_addr = *((unsigned int *) dst_ip->addr);
   memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
-
-  int wr = sendto(rsd, buf, buf_len, 0, (struct sockaddr *) &sa, sizeof(sa));
+  
+  if (transparent_proxy) memcpy((char *) sa.sin_zero, &local_sa, 8);
+  
+  int wr = sendto(rsd, buf, buf_len, (transparent_proxy ? MSG_PROXY : 0),
+                  (struct sockaddr *) &sa, sizeof(sa));
   if (wr < 0)
     syslog(LOG_ERR, "forward: sendto failed: %m");
   else if (wr < buf_len)
