@@ -18,7 +18,9 @@ TODO:
   - Transparent proxy control per ruleset.
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
-  
+- option to specify range for local source port of
+  outgoing sockets; this is useful for services like
+  lpd, which expects connections from ports within range 721-731
 
 
 CHANGES:
