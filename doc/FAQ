@@ -3,28 +3,60 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: FAQ,v 1.1 2001/05/15 00:24:54 evertonm Exp $
+# $Id: FAQ,v 1.2 2001/11/19 20:19:54 evertonm Exp $
 #
 
 
 Q: How to bind to a specific address?
 
-A: Use the "bind-address" statement.
+A1: If you want to specify a local address for incoming
+    connections, use the "listen-on" statement. In previous
+    Portfwd versions, such option was known as "bind-address".
 
-	/* bind-address example */
-	
-	bind-address 10.0.0.1 /* uses 10.0.0.1 until next bind-address */
-	tcp { 
-	  2323 { => 10.0.0.2:23 };
-	  8080 { => 10.0.0.2:80 }
-	}
-	udp { 6000 { => 192.168.0.2:6000 } }
-	
-	bind-address 192.168.0.1 /* from here afterwards, use 192.168.0.1 */
-	tcp { 
+        /* 
+	 * listen-on example
+	 */
+
+        listen-on 10.0.0.1 /* uses 10.0.0.1 until next listen-on */
+        tcp {
+          2323 { => 10.0.0.2:23 };
+          8080 { => 10.0.0.2:80 }
+        }
+        udp { 6000 { => 192.168.0.2:6000 } }
+
+        listen-on 192.168.0.1 /* from here afterwards, use 192.168.0.1 */
+        tcp {
           2323 { => 10.0.0.3:23 };
           2525 { => 192.168.0.2:25 }
         }
+
+
+A2: If you want to specify a local source address for
+    outgoing connections, use the "source-address" statement.
+    Please notice this option overrides the transparent
+    proxying.
+
+	/*
+	 * source-address example
+	 */
+
+	tcp { 10000 { => localhost:15000 } }
+	udp { 10000 { => localhost:15000 } }
+
+        /* Above the source-address line, the system
+           automatically selects the source address
+           for outgoing connections. */
+
+	source-address 10.0.0.2
+
+        /* Below the source-address line, the address
+           specified is used as source address
+           for outgoing connections. Of course, that
+           address must be previously assigned to a
+           local interface. */
+
+	tcp { 11000 { => localhost:15000 } }
+	udp { 11000 { => localhost:15000 } }
 
 
 Q: How does FTP forwarding work?
