@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: README,v 1.2 2001/07/08 04:35:17 evertonm Exp $
+# $Id: README,v 1.3 2001/11/19 19:34:43 evertonm Exp $
 #
 
 LICENSE
@@ -181,14 +181,16 @@ SUPPORT
 
         If you have further questions, please consult the FAQ.
 
-        There is a discussion board in the Portfwd web site:
+        There is a discussion board in the Portfwd web site at Source
+        Forge:
 
-                http://sourceforge.net/projects/portfwd/ 
+                http://portfwd.sf.net
 
         This is probably the most useful resource for Portfwd users.
 
         Anyway, one can contact me directly at:
 
-                Everton da Silva Marques <evertonm@my-deja.com>
+                Everton da Silva Marques
+                evertonsm at yahoo dot com dot br
 
                                  -x-

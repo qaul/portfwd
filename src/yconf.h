@@ -28,7 +28,9 @@ typedef union {
 #define	TK_USER	270
 #define	TK_GROUP	271
 #define	TK_BIND	272
-#define	TK_ILLEGAL	273
+#define	TK_LISTEN	273
+#define	TK_SOURCE	274
+#define	TK_ILLEGAL	275
 
 
 extern YYSTYPE yylval;

@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.2 2001/08/10 01:24:54 evertonm Exp $
+  $Id: forward.cc,v 1.3 2001/11/19 19:34:44 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -505,13 +505,11 @@ int tcp_listen(const struct ip_addr *ip, int *port, int queue)
   memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
 
 #ifndef NO_SO_REUSEADDR
-  int on = 1 ;
+  int on = 1;
 
-  ONVERBOSE(syslog(LOG_DEBUG, "Setting SO_REUSEADDR for socket %d/tcp", prt));
-  if ( setsockopt( sd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof( on ) ) == -1 )
-  {
-     syslog( LOG_WARNING, "setsockopt SO_REUSEADDR failed (%m)" ) ;
-  }
+  ONVERBOSE(syslog(LOG_DEBUG, "Setting SO_REUSEADDR for TCP socket port %d", prt));
+  if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on)) == -1)
+     syslog(LOG_WARNING, "setsockopt(SO_REUSEADDR) failed: %m") ;
 #endif
 
 
@@ -552,7 +550,7 @@ void close_sockets(vector<int> *port_list)
   DEBUGFD(syslog(LOG_DEBUG, "close_sockets(): Sockets closed: %d", port_list->get_size()));
 }
 
-void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_map*> *map_list)
+void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_map*> *map_list, const struct ip_addr *src)
 {
   struct sockaddr_in cli_sa;
   unsigned int cli_sa_len = sizeof(cli_sa);
@@ -580,7 +578,40 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
   DEBUGFD(syslog(LOG_DEBUG, "mother_socket: socket open: FD %d", rsd));
 
   /*
+   * Bind to user-supplied source address
+   *
+   * NOTE: This overrides transparent proxying.
+   */
+  if (src) {
+
+    if (transparent_proxy)
+      syslog(LOG_WARNING, "User-supplied source-address overriding transparent proxying");
+
+    struct sockaddr_in local_sa;  
+    unsigned int local_sa_len = sizeof(local_sa);
+    local_sa.sin_family = PF_INET;
+    local_sa.sin_port   = htons(0);
+    local_sa.sin_addr.s_addr = *((unsigned int *) src->addr);
+
+    ONVERBOSE(syslog(LOG_INFO, "mother_socket: Binding to local source address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
+
+    /*
+     * Bind local socket to user-supplied source address
+     */
+    if (bind(rsd, (struct sockaddr *) &local_sa, local_sa_len)) {
+      syslog(LOG_ERR, "mother_socket: Can't bind TCP socket to local source address: %s:%d: %m", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port));
+      socket_close(rsd);
+      return;
+    }
+
+  }
+  
+  else 
+
+  /*
    * Perform transparent proxy
+   *
+   * NOTE: User-supplied source address overrides transparent proxying.
    */
   if (transparent_proxy) {
 
@@ -593,7 +624,7 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
     memcpy(&local_sa, &cli_sa, cli_sa_len);
     local_sa.sin_port = htons(0);
 
-    ONVERBOSE(syslog(LOG_ERR, "mother_socket: Transparent proxy - Binding to local address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
+    ONVERBOSE(syslog(LOG_INFO, "mother_socket: Transparent proxy - Binding to local address: %s:%d", inet_ntoa(local_sa.sin_addr), htons(local_sa.sin_port)));
 
     /*
      * Bind local socket to client address
@@ -677,7 +708,7 @@ void client_socket(int src_fd, fd_set *fds, int dest_fd[], int *maxfd, const str
   }
 }
 
-void tcp_forward(const struct ip_addr *local, vector<int> *port_list, vector<host_map*> *map_list, const struct ip_addr *actv_ip, const struct ip_addr *pasv_ip, int uid, int gid)
+void tcp_forward(const struct ip_addr *listen, const struct ip_addr *source, vector<int> *port_list, vector<host_map*> *map_list, const struct ip_addr *actv_ip, const struct ip_addr *pasv_ip, int uid, int gid)
 {
   fd_set fds, tmp_fds, ms_fds;
   int fd_set_len = sizeof(fd_set);
@@ -690,7 +721,7 @@ void tcp_forward(const struct ip_addr *local, vector<int> *port_list, vector<hos
   for (it.start(); it.cont(); it.next()) {
 
     int port = it.get();
-    int sd = tcp_listen(local, &port, 3);
+    int sd = tcp_listen(listen, &port, 3);
     if (sd == -1) {
       close_sockets(port_list);
       return;
@@ -731,7 +762,7 @@ void tcp_forward(const struct ip_addr *local, vector<int> *port_list, vector<hos
       if (FD_ISSET(fd, &tmp_fds)) {
 	--nd;
 	if (FD_ISSET(fd, &ms_fds))
-	  mother_socket(fd, &fds, dest_fd, &maxfd, map_list);
+	  mother_socket(fd, &fds, dest_fd, &maxfd, map_list, source);
 	else
 	  client_socket(fd, &fds, dest_fd, &maxfd, actv_ip, pasv_ip);
       }

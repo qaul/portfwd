@@ -1,7 +1,7 @@
 /*
   conf.y
 
-  $Id: conf.y,v 1.2 2001/07/08 04:25:48 evertonm Exp $
+  $Id: conf.y,v 1.3 2001/11/19 19:34:44 evertonm Exp $
 */
 
 %{
@@ -17,16 +17,25 @@
 #include "entry.hpp"
 #include "portfwd.h"
 
+/*
+ * These are from the lexical analyzer defined in conf.lex
+ */
 extern int yylex();
 extern char yytext[];
 extern void show_last_token();
 extern int conf_line_number;
 extern char conf_ident[];
 
+/*
+ * Some useful constants
+ */
 const char *const ANY_ADDR = "0.0.0.0";
 const int MIN_MASK_LEN = 0;
 const int MAX_MASK_LEN = 32;
 
+/*
+ * We store the number of syntax errors here
+ */
 int conf_syntax_errors = 0;
 
 void yyerror(const char *msg)
@@ -45,9 +54,13 @@ vector<int>        *port_vector;
 vector<proto_map*> *map_vector;
 vector<entry*>     *entry_vector = new vector<entry*>();
 
-int            conf_user  = -1;
-int            conf_group = -1;
-struct ip_addr conf_bind  = solve_hostname(ANY_ADDR);
+int            conf_user   = -1;
+int            conf_group  = -1;
+
+const struct ip_addr conf_any_addr = solve_hostname(ANY_ADDR);
+struct ip_addr conf_listen         = conf_any_addr;
+struct ip_addr conf_source         = conf_any_addr;
+struct ip_addr *conf_src           = 0;
 
 /* Funcoes Auxiliares */
 
@@ -108,6 +121,8 @@ to_addr *use_toaddr(char *hostname, int port)
 %token TK_USER
 %token TK_GROUP
 %token TK_BIND
+%token TK_LISTEN
+%token TK_SOURCE
 
 %token TK_ILLEGAL
 
@@ -159,7 +174,12 @@ stmt:           entry { entry_vector-> push($1); } |
 
 global_option:  TK_USER TK_NAME { conf_user = solve_user(conf_ident); } |
                 TK_GROUP TK_NAME { conf_group = solve_group(conf_ident); } |
-		TK_BIND TK_NAME { conf_bind = solve_hostname(conf_ident); } ;
+                TK_LISTEN TK_NAME { conf_listen = solve_hostname(conf_ident); } |
+                TK_SOURCE TK_NAME { 
+					conf_source = solve_hostname(conf_ident); 
+					conf_src = &conf_source;
+		} |
+		TK_BIND TK_NAME { conf_listen = solve_hostname(conf_ident); };
 
 entry:		TK_TCP set_proto_tcp section { $$ = new entry(P_TCP, $3); } | 
          	TK_UDP set_proto_udp section { $$ = new entry(P_UDP, $3); };
@@ -180,25 +200,25 @@ map_list:	map {
 		} ;
 
 map:	        port_list TK_LBRACE host_list TK_RBRACE {
-			$$ = new proto_map($1, $3, 0, 0, conf_user, conf_group, conf_bind);
+			$$ = new proto_map($1, $3, 0, 0, conf_user, conf_group, conf_listen, conf_src);
 		} | 
                 port_list TK_ACTV name TK_LBRACE host_list TK_RBRACE {
 		        struct ip_addr ip = use_hostname($3);
-			$$ = new proto_map($1, $5, &ip, 0, conf_user, conf_group, conf_bind);
+			$$ = new proto_map($1, $5, &ip, 0, conf_user, conf_group, conf_listen, conf_src);
 		} |
                 port_list TK_PASV name TK_LBRACE host_list TK_RBRACE {
 		        struct ip_addr ip = use_hostname($3);
-			$$ = new proto_map($1, $5, 0, &ip, conf_user, conf_group, conf_bind);
+			$$ = new proto_map($1, $5, 0, &ip, conf_user, conf_group, conf_listen, conf_src);
 		} |
                 port_list TK_ACTV name TK_PASV name TK_LBRACE host_list TK_RBRACE {
 		        struct ip_addr ip1 = use_hostname($3);
 		        struct ip_addr ip2 = use_hostname($5);
-			$$ = new proto_map($1, $7, &ip1, &ip2, conf_user, conf_group, conf_bind);
+			$$ = new proto_map($1, $7, &ip1, &ip2, conf_user, conf_group, conf_listen, conf_src);
 		} |
                 port_list TK_PASV name TK_ACTV name TK_LBRACE host_list TK_RBRACE {
 		        struct ip_addr ip1 = use_hostname($3);
 		        struct ip_addr ip2 = use_hostname($5);
-			$$ = new proto_map($1, $7, &ip2, &ip1, conf_user, conf_group, conf_bind);
+			$$ = new proto_map($1, $7, &ip2, &ip1, conf_user, conf_group, conf_listen, conf_src);
 		} ;
 
 name:           TK_NAME { $$ = safe_strdup(conf_ident); } ;

@@ -1,7 +1,7 @@
 /*
   conf.lex
 
-  $Id: conf.lex,v 1.1 2001/05/15 00:25:01 evertonm Exp $
+  $Id: conf.lex,v 1.2 2001/11/19 19:34:44 evertonm Exp $
  */
 
 %{
@@ -75,7 +75,12 @@ ftp-active-mode-on  return trap_tk(TK_ACTV);
 ftp-passive-mode-on return trap_tk(TK_PASV);
 user                return trap_tk(TK_USER);
 group               return trap_tk(TK_GROUP);
-bind-address        return trap_tk(TK_BIND);
+bind-address        { 
+                    syslog(LOG_ERR, "Found deprecated 'bind-address' token at line %d, please use 'listen-on' instead", conf_line_number);
+                    return trap_tk(TK_BIND);
+                    }
+listen-on           return trap_tk(TK_LISTEN);
+source-address      return trap_tk(TK_SOURCE);
 
 %{
 		/* Names and Numbers */

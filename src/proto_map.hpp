@@ -1,7 +1,7 @@
 /*
   proto_map.hpp
 
-  $Id: proto_map.hpp,v 1.1 2001/05/15 00:25:00 evertonm Exp $
+  $Id: proto_map.hpp,v 1.2 2001/11/19 19:34:44 evertonm Exp $
  */
 
 #ifndef PROTO_MAP_HPP
@@ -22,10 +22,12 @@ private:
   struct ip_addr    pasv_ip;
   int               uid;
   int               gid;
-  struct ip_addr    local_bind;
+  struct ip_addr    local_listen;
+  struct ip_addr    local_source;
+  struct ip_addr    *local_src;
 
 public:
-  proto_map(vector<int> *port_l, vector<host_map*> *map_l, struct ip_addr *actv, struct ip_addr *pasv, int user, int group, struct ip_addr local);
+  proto_map(vector<int> *port_l, vector<host_map*> *map_l, struct ip_addr *actv, struct ip_addr *pasv, int user, int group, struct ip_addr listen, struct ip_addr *source);
 
   void show() const;
 

@@ -20,7 +20,9 @@
 #define	TK_USER	270
 #define	TK_GROUP	271
 #define	TK_BIND	272
-#define	TK_ILLEGAL	273
+#define	TK_LISTEN	273
+#define	TK_SOURCE	274
+#define	TK_ILLEGAL	275
 
 #line 7 "conf.y"
 
@@ -36,16 +38,25 @@
 #include "entry.hpp"
 #include "portfwd.h"
 
+/*
+ * These are from the lexical analyzer defined in conf.lex
+ */
 extern int yylex();
 extern char yytext[];
 extern void show_last_token();
 extern int conf_line_number;
 extern char conf_ident[];
 
+/*
+ * Some useful constants
+ */
 const char *const ANY_ADDR = "0.0.0.0";
 const int MIN_MASK_LEN = 0;
 const int MAX_MASK_LEN = 32;
 
+/*
+ * We store the number of syntax errors here
+ */
 int conf_syntax_errors = 0;
 
 void yyerror(const char *msg)
@@ -64,9 +75,13 @@ vector<int>        *port_vector;
 vector<proto_map*> *map_vector;
 vector<entry*>     *entry_vector = new vector<entry*>();
 
-int            conf_user  = -1;
-int            conf_group = -1;
-struct ip_addr conf_bind  = solve_hostname(ANY_ADDR);
+int            conf_user   = -1;
+int            conf_group  = -1;
+
+const struct ip_addr conf_any_addr = solve_hostname(ANY_ADDR);
+struct ip_addr conf_listen         = conf_any_addr;
+struct ip_addr conf_source         = conf_any_addr;
+struct ip_addr *conf_src           = 0;
 
 /* Funcoes Auxiliares */
 
@@ -108,7 +123,7 @@ to_addr *use_toaddr(char *hostname, int port)
 }
 
 
-#line 114 "conf.y"
+#line 129 "conf.y"
 typedef union {
 	int	           int_type;
         char               *str_type;
@@ -123,7 +138,7 @@ typedef union {
 	vector<proto_map*> *map_list_type;
 	entry		   *entry_type;
 } YYSTYPE;
-#line 143 "conf.y"
+#line 158 "conf.y"
 
   /* Simbolo nao-terminal inicial */
 #include <stdio.h>
@@ -136,11 +151,11 @@ typedef union {
 
 
 
-#define	YYFINAL		79
+#define	YYFINAL		83
 #define	YYFLAG		-32768
-#define	YYNTBASE	20
+#define	YYNTBASE	22
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 273 ? yytranslate[x] : 39)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 275 ? yytranslate[x] : 41)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -170,42 +185,44 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
      7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17,    18,    19
+    17,    18,    19,    20,    21
 };
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
      0,     1,     3,     5,     8,    10,    12,    15,    18,    21,
-    25,    29,    30,    31,    35,    37,    41,    46,    53,    60,
-    69,    78,    80,    82,    86,    88,    92,    98,   100,   104,
-   105,   107,   110,   114,   117,   118,   121,   123,   126,   129
+    24,    27,    31,    35,    36,    37,    41,    43,    47,    52,
+    59,    66,    75,    84,    86,    88,    92,    94,    98,   104,
+   106,   110,   111,   113,   116,   120,   123,   124,   127,   129,
+   132,   135
 };
 
 static const short yyrhs[] = {    -1,
-    21,     0,    22,     0,    21,    22,     0,    24,     0,    23,
-     0,    16,     3,     0,    17,     3,     0,    18,     3,     0,
-     4,    25,    27,     0,     5,    26,    27,     0,     0,     0,
-    11,    28,    12,     0,    29,     0,    28,     7,    29,     0,
-    31,    11,    32,    12,     0,    31,    14,    30,    11,    32,
-    12,     0,    31,    15,    30,    11,    32,    12,     0,    31,
-    14,    30,    15,    30,    11,    32,    12,     0,    31,    15,
-    30,    14,    30,    11,    32,    12,     0,     3,     0,    30,
-     0,    31,     8,    30,     0,    33,     0,    32,     7,    33,
-     0,    34,    13,    30,     6,    30,     0,    35,     0,    34,
-     8,    35,     0,     0,    36,     0,     6,    38,     0,    36,
-     6,    38,     0,    30,    37,     0,     0,     9,     3,     0,
-    30,     0,    30,    10,     0,    10,    30,     0,    30,    10,
-    30,     0
+    23,     0,    24,     0,    23,    24,     0,    26,     0,    25,
+     0,    16,     3,     0,    17,     3,     0,    19,     3,     0,
+    20,     3,     0,    18,     3,     0,     4,    27,    29,     0,
+     5,    28,    29,     0,     0,     0,    11,    30,    12,     0,
+    31,     0,    30,     7,    31,     0,    33,    11,    34,    12,
+     0,    33,    14,    32,    11,    34,    12,     0,    33,    15,
+    32,    11,    34,    12,     0,    33,    14,    32,    15,    32,
+    11,    34,    12,     0,    33,    15,    32,    14,    32,    11,
+    34,    12,     0,     3,     0,    32,     0,    33,     8,    32,
+     0,    35,     0,    34,     7,    35,     0,    36,    13,    32,
+     6,    32,     0,    37,     0,    36,     8,    37,     0,     0,
+    38,     0,     6,    40,     0,    38,     6,    40,     0,    32,
+    39,     0,     0,     9,     3,     0,    32,     0,    32,    10,
+     0,    10,    32,     0,    32,    10,    32,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   151,   151,   154,   154,   157,   157,   160,   160,   161,   164,
-   164,   167,   168,   170,   172,   176,   182,   184,   188,   192,
-   197,   204,   206,   210,   216,   220,   226,   232,   236,   242,
-   244,   247,   250,   255,   260,   260,   263,   266,   270,   274
+   166,   166,   169,   169,   172,   172,   175,   175,   176,   177,
+   181,   184,   184,   187,   188,   190,   192,   196,   202,   204,
+   208,   212,   217,   224,   226,   230,   236,   240,   246,   252,
+   256,   262,   264,   267,   270,   275,   280,   280,   283,   286,
+   290,   294
 };
 #endif
 
@@ -214,81 +231,87 @@ static const short yyrline[] = { 0,
 
 static const char * const yytname[] = {   "$","error","$undefined.","TK_NAME",
 "TK_TCP","TK_UDP","TK_COLON","TK_SCOLON","TK_COMMA","TK_SLASH","TK_RANGE","TK_LBRACE",
-"TK_RBRACE","TK_ARROW","TK_ACTV","TK_PASV","TK_USER","TK_GROUP","TK_BIND","TK_ILLEGAL",
-"conf","stmt_list","stmt","global_option","entry","set_proto_tcp","set_proto_udp",
-"section","map_list","map","name","port_list","host_list","host_map","from_list",
-"from","host_prefix","prefix_length","port_range", NULL
+"TK_RBRACE","TK_ARROW","TK_ACTV","TK_PASV","TK_USER","TK_GROUP","TK_BIND","TK_LISTEN",
+"TK_SOURCE","TK_ILLEGAL","conf","stmt_list","stmt","global_option","entry","set_proto_tcp",
+"set_proto_udp","section","map_list","map","name","port_list","host_list","host_map",
+"from_list","from","host_prefix","prefix_length","port_range", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    20,    20,    21,    21,    22,    22,    23,    23,    23,    24,
-    24,    25,    26,    27,    28,    28,    29,    29,    29,    29,
-    29,    30,    31,    31,    32,    32,    33,    34,    34,    35,
-    35,    35,    35,    36,    37,    37,    38,    38,    38,    38
+    22,    22,    23,    23,    24,    24,    25,    25,    25,    25,
+    25,    26,    26,    27,    28,    29,    30,    30,    31,    31,
+    31,    31,    31,    32,    33,    33,    34,    34,    35,    36,
+    36,    37,    37,    37,    37,    38,    39,    39,    40,    40,
+    40,    40
 };
 
 static const short yyr2[] = {     0,
-     0,     1,     1,     2,     1,     1,     2,     2,     2,     3,
-     3,     0,     0,     3,     1,     3,     4,     6,     6,     8,
-     8,     1,     1,     3,     1,     3,     5,     1,     3,     0,
-     1,     2,     3,     2,     0,     2,     1,     2,     2,     3
+     0,     1,     1,     2,     1,     1,     2,     2,     2,     2,
+     2,     3,     3,     0,     0,     3,     1,     3,     4,     6,
+     6,     8,     8,     1,     1,     3,     1,     3,     5,     1,
+     3,     0,     1,     2,     3,     2,     0,     2,     1,     2,
+     2,     3
 };
 
 static const short yydefact[] = {     1,
-    12,    13,     0,     0,     0,     2,     3,     6,     5,     0,
-     0,     7,     8,     9,     4,     0,    10,    11,    22,     0,
-    15,    23,     0,     0,    14,     0,    30,     0,     0,    16,
-    24,     0,    35,     0,    25,     0,    28,    31,     0,     0,
-     0,    37,    32,     0,    34,    30,    17,    30,     0,     0,
-    30,     0,    30,     0,    39,    38,    36,    26,    29,     0,
-    33,     0,     0,     0,     0,    40,     0,    18,    30,    19,
-    30,    27,     0,     0,    20,    21,     0,     0,     0
+    14,    15,     0,     0,     0,     0,     0,     2,     3,     6,
+     5,     0,     0,     7,     8,    11,     9,    10,     4,     0,
+    12,    13,    24,     0,    17,    25,     0,     0,    16,     0,
+    32,     0,     0,    18,    26,     0,    37,     0,    27,     0,
+    30,    33,     0,     0,     0,    39,    34,     0,    36,    32,
+    19,    32,     0,     0,    32,     0,    32,     0,    41,    40,
+    38,    28,    31,     0,    35,     0,     0,     0,     0,    42,
+     0,    20,    32,    21,    32,    29,     0,     0,    22,    23,
+     0,     0,     0
 };
 
-static const short yydefgoto[] = {    77,
-     6,     7,     8,     9,    10,    11,    17,    20,    21,    33,
-    23,    34,    35,    36,    37,    38,    45,    43
+static const short yydefgoto[] = {    81,
+     8,     9,    10,    11,    12,    13,    21,    24,    25,    37,
+    27,    38,    39,    40,    41,    42,    49,    47
 };
 
 static const short yypact[] = {    10,
--32768,-32768,     2,    26,    28,    10,-32768,-32768,-32768,    39,
-    39,-32768,-32768,-32768,-32768,    42,-32768,-32768,-32768,    23,
--32768,-32768,     9,    42,-32768,    42,     1,    42,    42,-32768,
--32768,    -1,    44,    25,-32768,    -2,-32768,    48,     7,    38,
-    42,    45,-32768,    53,-32768,     1,-32768,     1,    42,    -1,
-     1,    42,     1,    42,-32768,    42,-32768,-32768,-32768,    51,
--32768,    32,    47,    34,    49,-32768,    42,-32768,     1,-32768,
-     1,-32768,    35,    36,-32768,-32768,    59,    61,-32768
+-32768,-32768,     2,    28,    46,    50,    51,    10,-32768,-32768,
+-32768,    24,    24,-32768,-32768,-32768,-32768,-32768,-32768,    53,
+-32768,-32768,-32768,    25,-32768,-32768,     9,    53,-32768,    53,
+     1,    53,    53,-32768,-32768,    -1,    48,    32,-32768,    -2,
+-32768,    52,     7,    41,    53,    49,-32768,    57,-32768,     1,
+-32768,     1,    53,    -1,     1,    53,     1,    53,-32768,    53,
+-32768,-32768,-32768,    55,-32768,    34,    54,    35,    56,-32768,
+    53,-32768,     1,-32768,     1,-32768,    36,    38,-32768,-32768,
+    62,    63,-32768
 };
 
 static const short yypgoto[] = {-32768,
--32768,    56,-32768,-32768,-32768,-32768,    52,-32768,    40,   -16,
--32768,   -50,    19,-32768,    18,-32768,-32768,    17
+-32768,    58,-32768,-32768,-32768,-32768,    59,-32768,    40,   -20,
+-32768,   -54,    14,-32768,    17,-32768,-32768,    16
 };
 
 
-#define	YYLAST		67
+#define	YYLAST		72
 
 
-static const short yytable[] = {    22,
-    62,    19,    64,    19,    12,    48,    32,    22,    41,    31,
-    49,    39,    40,     1,     2,    42,    26,    51,    73,    27,
-    74,    52,    28,    29,    55,     3,     4,     5,    13,    24,
-    14,    46,    60,    42,    25,    63,    47,    65,    46,    66,
-    46,    46,    46,    68,    19,    70,    75,    76,    53,    16,
-    72,    54,    44,    50,    56,    57,    67,    69,    78,    71,
-    79,    15,    18,    30,    58,    59,    61
+static const short yytable[] = {    26,
+    66,    23,    68,    23,    14,    52,    36,    26,    45,    35,
+    53,    43,    44,     1,     2,    46,    30,    55,    77,    31,
+    78,    56,    32,    33,    59,     3,     4,     5,     6,     7,
+    15,    28,    64,    46,    20,    67,    29,    69,    50,    70,
+    50,    50,    50,    51,    50,    72,    74,    79,    16,    80,
+    76,    57,    17,    18,    58,    23,    48,    54,    60,    61,
+    71,    82,    83,    62,    73,    19,    75,    34,    63,    65,
+     0,    22
 };
 
-static const short yycheck[] = {    16,
-    51,     3,    53,     3,     3,     8,     6,    24,    10,    26,
-    13,    28,    29,     4,     5,    32,     8,    11,    69,    11,
-    71,    15,    14,    15,    41,    16,    17,    18,     3,     7,
-     3,     7,    49,    50,    12,    52,    12,    54,     7,    56,
-     7,     7,     7,    12,     3,    12,    12,    12,    11,    11,
-    67,    14,     9,     6,    10,     3,     6,    11,     0,    11,
-     0,     6,    11,    24,    46,    48,    50
+static const short yycheck[] = {    20,
+    55,     3,    57,     3,     3,     8,     6,    28,    10,    30,
+    13,    32,    33,     4,     5,    36,     8,    11,    73,    11,
+    75,    15,    14,    15,    45,    16,    17,    18,    19,    20,
+     3,     7,    53,    54,    11,    56,    12,    58,     7,    60,
+     7,     7,     7,    12,     7,    12,    12,    12,     3,    12,
+    71,    11,     3,     3,    14,     3,     9,     6,    10,     3,
+     6,     0,     0,    50,    11,     8,    11,    28,    52,    54,
+    -1,    13
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/share/misc/bison.simple"
@@ -834,211 +857,222 @@ yyreduce:
   switch (yyn) {
 
 case 5:
-#line 157 "conf.y"
+#line 172 "conf.y"
 { entry_vector-> push(yyvsp[0].entry_type); ;
     break;}
 case 7:
-#line 160 "conf.y"
+#line 175 "conf.y"
 { conf_user = solve_user(conf_ident); ;
     break;}
 case 8:
-#line 161 "conf.y"
+#line 176 "conf.y"
 { conf_group = solve_group(conf_ident); ;
     break;}
 case 9:
-#line 162 "conf.y"
-{ conf_bind = solve_hostname(conf_ident); ;
+#line 177 "conf.y"
+{ conf_listen = solve_hostname(conf_ident); ;
     break;}
 case 10:
-#line 164 "conf.y"
-{ yyval.entry_type = new entry(P_TCP, yyvsp[0].map_list_type); ;
+#line 178 "conf.y"
+{ 
+					conf_source = solve_hostname(conf_ident); 
+					conf_src = &conf_source;
+		;
     break;}
 case 11:
-#line 165 "conf.y"
-{ yyval.entry_type = new entry(P_UDP, yyvsp[0].map_list_type); ;
+#line 182 "conf.y"
+{ conf_listen = solve_hostname(conf_ident); ;
     break;}
 case 12:
-#line 167 "conf.y"
-{ set_protoname(P_TCP); ;
+#line 184 "conf.y"
+{ yyval.entry_type = new entry(P_TCP, yyvsp[0].map_list_type); ;
     break;}
 case 13:
-#line 168 "conf.y"
-{ set_protoname(P_UDP); ;
+#line 185 "conf.y"
+{ yyval.entry_type = new entry(P_UDP, yyvsp[0].map_list_type); ;
     break;}
 case 14:
-#line 170 "conf.y"
-{ yyval.map_list_type = yyvsp[-1].map_list_type; ;
+#line 187 "conf.y"
+{ set_protoname(P_TCP); ;
     break;}
 case 15:
-#line 172 "conf.y"
+#line 188 "conf.y"
+{ set_protoname(P_UDP); ;
+    break;}
+case 16:
+#line 190 "conf.y"
+{ yyval.map_list_type = yyvsp[-1].map_list_type; ;
+    break;}
+case 17:
+#line 192 "conf.y"
 {
 			map_vector = new vector<proto_map*>();
 			map_vector->push(yyvsp[0].map_type);
 			yyval.map_list_type = map_vector;
 		;
     break;}
-case 16:
-#line 177 "conf.y"
+case 18:
+#line 197 "conf.y"
 {
 			map_vector->push(yyvsp[0].map_type);
 			yyval.map_list_type = map_vector;
 		;
     break;}
-case 17:
-#line 182 "conf.y"
-{
-			yyval.map_type = new proto_map(yyvsp[-3].port_list_type, yyvsp[-1].host_list_type, 0, 0, conf_user, conf_group, conf_bind);
-		;
-    break;}
-case 18:
-#line 185 "conf.y"
-{
-		        struct ip_addr ip = use_hostname(yyvsp[-3].str_type);
-			yyval.map_type = new proto_map(yyvsp[-5].port_list_type, yyvsp[-1].host_list_type, &ip, 0, conf_user, conf_group, conf_bind);
-		;
-    break;}
 case 19:
-#line 189 "conf.y"
+#line 202 "conf.y"
 {
-		        struct ip_addr ip = use_hostname(yyvsp[-3].str_type);
-			yyval.map_type = new proto_map(yyvsp[-5].port_list_type, yyvsp[-1].host_list_type, 0, &ip, conf_user, conf_group, conf_bind);
+			yyval.map_type = new proto_map(yyvsp[-3].port_list_type, yyvsp[-1].host_list_type, 0, 0, conf_user, conf_group, conf_listen, conf_src);
 		;
     break;}
 case 20:
-#line 193 "conf.y"
+#line 205 "conf.y"
 {
-		        struct ip_addr ip1 = use_hostname(yyvsp[-5].str_type);
-		        struct ip_addr ip2 = use_hostname(yyvsp[-3].str_type);
-			yyval.map_type = new proto_map(yyvsp[-7].port_list_type, yyvsp[-1].host_list_type, &ip1, &ip2, conf_user, conf_group, conf_bind);
+		        struct ip_addr ip = use_hostname(yyvsp[-3].str_type);
+			yyval.map_type = new proto_map(yyvsp[-5].port_list_type, yyvsp[-1].host_list_type, &ip, 0, conf_user, conf_group, conf_listen, conf_src);
 		;
     break;}
 case 21:
-#line 198 "conf.y"
+#line 209 "conf.y"
 {
-		        struct ip_addr ip1 = use_hostname(yyvsp[-5].str_type);
-		        struct ip_addr ip2 = use_hostname(yyvsp[-3].str_type);
-			yyval.map_type = new proto_map(yyvsp[-7].port_list_type, yyvsp[-1].host_list_type, &ip2, &ip1, conf_user, conf_group, conf_bind);
+		        struct ip_addr ip = use_hostname(yyvsp[-3].str_type);
+			yyval.map_type = new proto_map(yyvsp[-5].port_list_type, yyvsp[-1].host_list_type, 0, &ip, conf_user, conf_group, conf_listen, conf_src);
 		;
     break;}
 case 22:
-#line 204 "conf.y"
-{ yyval.str_type = safe_strdup(conf_ident); ;
+#line 213 "conf.y"
+{
+		        struct ip_addr ip1 = use_hostname(yyvsp[-5].str_type);
+		        struct ip_addr ip2 = use_hostname(yyvsp[-3].str_type);
+			yyval.map_type = new proto_map(yyvsp[-7].port_list_type, yyvsp[-1].host_list_type, &ip1, &ip2, conf_user, conf_group, conf_listen, conf_src);
+		;
     break;}
 case 23:
-#line 206 "conf.y"
+#line 218 "conf.y"
+{
+		        struct ip_addr ip1 = use_hostname(yyvsp[-5].str_type);
+		        struct ip_addr ip2 = use_hostname(yyvsp[-3].str_type);
+			yyval.map_type = new proto_map(yyvsp[-7].port_list_type, yyvsp[-1].host_list_type, &ip2, &ip1, conf_user, conf_group, conf_listen, conf_src);
+		;
+    break;}
+case 24:
+#line 224 "conf.y"
+{ yyval.str_type = safe_strdup(conf_ident); ;
+    break;}
+case 25:
+#line 226 "conf.y"
 {
 			port_vector = new vector<int>();
 			port_vector->push(use_port(yyvsp[0].str_type));
 			yyval.port_list_type = port_vector; 
 		;
     break;}
-case 24:
-#line 211 "conf.y"
+case 26:
+#line 231 "conf.y"
 {
 			port_vector->push(use_port(yyvsp[0].str_type));
 			yyval.port_list_type = port_vector; 
 		;
     break;}
-case 25:
-#line 216 "conf.y"
+case 27:
+#line 236 "conf.y"
 {
               		host_vector = new vector<host_map*>();
 			host_vector->push(yyvsp[0].host_map_type);
 			yyval.host_list_type = host_vector;
 		;
     break;}
-case 26:
-#line 221 "conf.y"
+case 28:
+#line 241 "conf.y"
 {
 			host_vector->push(yyvsp[0].host_map_type);
 			yyval.host_list_type = host_vector;
 		;
     break;}
-case 27:
-#line 226 "conf.y"
+case 29:
+#line 246 "conf.y"
 {
 			int port = use_port(yyvsp[0].str_type);
 			to_addr *to = use_toaddr(yyvsp[-2].str_type, port); /* new to_addr() */
 			yyval.host_map_type = new host_map(yyvsp[-4].from_list_type, to);
 		;
     break;}
-case 28:
-#line 232 "conf.y"
+case 30:
+#line 252 "conf.y"
 {
 			from_vector = new vector<from_addr*>();
 			from_vector->push(yyvsp[0].from_type);
 			yyval.from_list_type = from_vector;
 		;
     break;}
-case 29:
-#line 237 "conf.y"
+case 31:
+#line 257 "conf.y"
 {
 			from_vector->push(yyvsp[0].from_type);
 			yyval.from_list_type = from_vector;
 		;
     break;}
-case 30:
-#line 242 "conf.y"
+case 32:
+#line 262 "conf.y"
 { 
 			yyval.from_type = new from_addr(new net_portion(solve_hostname(ANY_ADDR), MIN_MASK_LEN), new port_pair(FIRST_PORT, LAST_PORT)); 
 		;
     break;}
-case 31:
-#line 245 "conf.y"
+case 33:
+#line 265 "conf.y"
 { 
 			yyval.from_type = new from_addr(yyvsp[0].net_type, new port_pair(FIRST_PORT, LAST_PORT)); 
 		;
     break;}
-case 32:
-#line 248 "conf.y"
+case 34:
+#line 268 "conf.y"
 { 
 			yyval.from_type = new from_addr(new net_portion(solve_hostname(ANY_ADDR), MIN_MASK_LEN), yyvsp[0].port_type); 
 		;
     break;}
-case 33:
-#line 251 "conf.y"
+case 35:
+#line 271 "conf.y"
 { 
 			yyval.from_type = new from_addr(yyvsp[-2].net_type, yyvsp[0].port_type); 
 		;
     break;}
-case 34:
-#line 255 "conf.y"
+case 36:
+#line 275 "conf.y"
 { 
 			/* use_hostprefix(): new net_portion() */
   			yyval.net_type = use_hostprefix(yyvsp[-1].str_type, yyvsp[0].int_type); 
 		;
     break;}
-case 35:
-#line 260 "conf.y"
+case 37:
+#line 280 "conf.y"
 { yyval.int_type = MAX_MASK_LEN; ;
     break;}
-case 36:
-#line 261 "conf.y"
+case 38:
+#line 281 "conf.y"
 { yyval.int_type = mask_len_value(conf_ident); ;
     break;}
-case 37:
-#line 263 "conf.y"
+case 39:
+#line 283 "conf.y"
 {
 			int port = use_port(yyvsp[0].str_type);
 			yyval.port_type = new port_pair(port, port);
 		;
     break;}
-case 38:
-#line 267 "conf.y"
+case 40:
+#line 287 "conf.y"
 { 
 			yyval.port_type = new port_pair(use_port(yyvsp[-1].str_type), 
 					   LAST_PORT); 
 		;
     break;}
-case 39:
-#line 271 "conf.y"
+case 41:
+#line 291 "conf.y"
 { 
 			yyval.port_type = new port_pair(FIRST_PORT, 
 				           use_port(yyvsp[0].str_type)); 
 		;
     break;}
-case 40:
-#line 275 "conf.y"
+case 42:
+#line 295 "conf.y"
 { 
 			yyval.port_type = new port_pair(use_port(yyvsp[-2].str_type),
 				           use_port(yyvsp[0].str_type));
@@ -1266,7 +1300,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 281 "conf.y"
+#line 301 "conf.y"
 
 
 /* C code */

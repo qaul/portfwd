@@ -1,7 +1,7 @@
 #
 # conf.txt
 #
-# $Id: conf.txt,v 1.1 2001/05/15 00:24:54 evertonm Exp $
+# $Id: conf.txt,v 1.2 2001/11/19 19:34:44 evertonm Exp $
 #
 
 conf => EMPTY
@@ -15,7 +15,9 @@ stmt => entry
 
 global_option => "user" USER_NAME
 		 "group" GROUP_NAME
-		 "bind-address" HOST_NAME
+		 "bind-address" HOST_NAME (Please use listen-on instead of bind-address.)
+		 "listen-on" HOST_NAME
+                 "source-address" HOST_NAME
 
 entry => "tcp" "{" map_list "}"
          "udp" "{" map_list "}"

@@ -14,13 +14,23 @@ TODO:
 CHANGES:
 
 ----
-0.23
+0.24
 ----
 
 - Marc Merlin <marc@merlins.org> suggestions:
   - Transparent proxy control per ruleset.
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
+
+----
+0.23
+----
+
+- Fix unicast of UDP messages.
+/ Allow specification of local source address for outgoing connections.
+  Note: this overrides the transparent proxying.
+  + for TCP
+  - for UDP
 
 ----
 0.22
