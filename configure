@@ -1706,7 +1706,7 @@ EOF
 
 fi
 
-for ac_hdr in getopt.h fcntl.h sys/file.h sys/ioctl.h sys/time.h syslog.h unistd.h sys/termios.h
+for ac_hdr in getopt.h fcntl.h sys/file.h sys/ioctl.h sys/time.h syslog.h unistd.h sys/termios.h sys/socket.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -2148,11 +2148,34 @@ fi
 done
 
 
+if test "$cross_compiling" = yes; then
+    { echo "configure: error: can not run test program while cross compiling" 1>&2; exit 1; }
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2156 "configure"
+#include "confdefs.h"
+tools/have_msg_proxy.c
+EOF
+if { (eval echo configure:2160: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+then
+  cat >> confdefs.h <<\EOF
+#define HAVE_MSG_PROXY 1
+EOF
+
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+fi
+rm -fr conftest*
+fi
+
+
 LIBS="$LIBS $LEXLIB"
 
 
 REAL_CC=$CC
 CC=$CXX
+
 
 
 trap '' 1 2 15

@@ -19,7 +19,7 @@ AC_CHECK_LIB(nsl, gethostbyname)
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(getopt.h fcntl.h sys/file.h sys/ioctl.h sys/time.h syslog.h unistd.h sys/termios.h)
+AC_CHECK_HEADERS(getopt.h fcntl.h sys/file.h sys/ioctl.h sys/time.h syslog.h unistd.h sys/termios.h sys/socket.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
@@ -31,6 +31,9 @@ AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(getopt_long select socket strdup strerror)
 
+dnl Checks for preprocessor symbols
+AC_TRY_RUN(tools/have_msg_proxy.c, [AC_DEFINE(HAVE_MSG_PROXY, 1, [Define if you have MSG_PROXY in <sys/socket.h>])])
+
 LIBS="$LIBS $LEXLIB"
 AC_SUBST(LIBS)
 
@@ -38,4 +41,5 @@ REAL_CC=$CC
 CC=$CXX
 AC_SUBST(REAL_CC)
 AC_SUBST(CC)
+
 AC_OUTPUT(getopt/Makefile src/Makefile tools/Makefile doc/Makefile Makefile)

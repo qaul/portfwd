@@ -64,6 +64,9 @@
 /* Define if you have the <sys/ioctl.h> header file.  */
 #undef HAVE_SYS_IOCTL_H
 
+/* Define if you have the <sys/socket.h> header file.  */
+#undef HAVE_SYS_SOCKET_H
+
 /* Define if you have the <sys/termios.h> header file.  */
 #undef HAVE_SYS_TERMIOS_H
 
@@ -87,4 +90,7 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define if you have MSG_PROXY in <sys/socket.h> */
+#undef HAVE_MSG_PROXY
 

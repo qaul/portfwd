@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.3 2001/09/21 17:00:47 evertonm Exp $
+  $Id: util.cc,v 1.4 2002/04/15 04:15:51 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -22,13 +22,12 @@
 #include <syslog.h>
 #include <stdlib.h>
 
+#include "util.h"
+
 /* Solaris */
-#include "config.h"
 #ifdef HAVE_SYS_TERMIOS_H 
 #include <sys/termios.h> 
 #endif 
-
-#include "util.h"
 
 int verbose_mode = 0; /* See ONVERBOSE in util.h */
 

@@ -1,12 +1,17 @@
 /*
   util.h
 
-  $Id: util.h,v 1.1 2001/05/15 00:25:01 evertonm Exp $
+  $Id: util.h,v 1.2 2002/04/15 04:15:51 evertonm Exp $
  */
+
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include "config.h"
 
 extern int verbose_mode;
 
@@ -32,5 +37,7 @@ void fdset(int fd, fd_set *fds, int *maxfd);
 void fdclear(int fd, fd_set *fds, int *maxfd);
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+#endif /* UTIL_H */
 
 /* eof: util.h */

@@ -1,7 +1,7 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.3 2002/04/15 02:15:04 evertonm Exp $
+  $Id: portfwd.cc,v 1.4 2002/04/15 04:15:51 evertonm Exp $
  */
 
 
@@ -31,7 +31,10 @@ extern vector<entry*> *entry_vector;
 const int BUF_SZ = 8192;
 const char * const portfwd_version = VERSION;
 
+#ifdef HAVE_MSG_PROXY
 int transparent_proxy = 0;
+#endif 
+
 int on_the_fly_dns = 0;
 
 void usage(FILE *out) 
@@ -41,7 +44,11 @@ void usage(FILE *out)
 	       "       -h               | --help\n"
 	       "       -v               | --version\n"
 	       "       -d               | --debug\n"
+
+#ifdef HAVE_MSG_PROXY
                "       -t               | --transparent-proxy\n"
+#endif
+
 	       "       -f               | --on-the-fly-dns\n"
 	       "       -c <config-file> | --config <config-file>\n",
 	  prog);
@@ -65,7 +72,11 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
     {"help", 0, 0, 'h'},
     {"version", 0, 0, 'v'},
     {"debug", 0, 0, 'd'},
+
+#ifdef HAVE_MSG_PROXY
     {"transparent-proxy", 0, 0, 't'},
+#endif 
+
     {"on-the-fly-dns", 0, 0, 'f'},
     {"config", 1, 0, 'c'},
     {0, 0, 0, 0}
@@ -91,9 +102,13 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
     case 'd':
       ++verbose_mode;
       break;
+
+#ifdef HAVE_MSG_PROXY
     case 't':
       ++transparent_proxy;
       break;
+#endif
+
     case 'f':
       ++on_the_fly_dns;
       break;
@@ -256,7 +271,11 @@ int main(int argc, const char *argv[])
 
   ONVERBOSE(syslog(LOG_DEBUG, "Verbose mode: %d", verbose_mode));
 
+#ifdef HAVE_MSG_PROXY
   ONVERBOSE(syslog(LOG_INFO, "Transparent proxy mode: %s (%d)", transparent_proxy ? "on" : "off", transparent_proxy));
+#else
+  ONVERBOSE(syslog(LOG_INFO, "Transparent proxy mode: disabled on compile time"));
+#endif
 
   ONVERBOSE(syslog(LOG_INFO, "On the fly DNS mode: %s (%d)", on_the_fly_dns ? "on" : "off", on_the_fly_dns));
 

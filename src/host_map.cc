@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.8 2002/04/13 05:05:39 evertonm Exp $
+  $Id: host_map.cc,v 1.9 2002/04/15 04:15:51 evertonm Exp $
  */
 
 #include <string.h>
@@ -63,8 +63,10 @@ static int make_tcp_outgoing_socket(const struct ip_addr *src, const struct sock
    */
   if (src) {
 
+#ifdef HAVE_MSG_PROXY
     if (transparent_proxy)
       syslog(LOG_WARNING, "User-supplied source-address overriding transparent proxying for TCP socket");
+#endif
 
     struct sockaddr_in local_sa;  
     unsigned int local_sa_len = sizeof(local_sa);
@@ -84,7 +86,11 @@ static int make_tcp_outgoing_socket(const struct ip_addr *src, const struct sock
     }
 
   }
-  
+
+#ifndef HAVE_MSG_PROXY
+;
+#else  
+
   else 
 
     /*
@@ -115,6 +121,7 @@ static int make_tcp_outgoing_socket(const struct ip_addr *src, const struct sock
       }
       
     } /* else if (transparent_proxy) */
+#endif /* HAVE_MSG_PROXY */
 
   return rsd;
 }
@@ -257,8 +264,10 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
    */
   if (source) {
 
+#ifdef HAVE_MSG_PROXY
     if (transparent_proxy)
       syslog(LOG_WARNING, "User-supplied source-address overriding transparent proxying for UDP socket");
+#endif
 
     local_sa.sin_family = PF_INET;
     local_sa.sin_port   = htons(0);
@@ -267,6 +276,10 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
     ONVERBOSE2(syslog(LOG_ERR, "host_map::udp_forward: \"Binding\" to local source address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
     
   }
+
+#ifndef HAVE_MSG_PROXY
+;
+#else
 
   else
    
@@ -285,6 +298,8 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
       ONVERBOSE2(syslog(LOG_ERR, "host_map::udp_forward: Transparent proxy - \"Binding\" to local address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
       
     } /* else if (transparent_proxy) */
+
+#endif /* HAVE_MSG_PROXY */
   
   /*
    * Destination address
@@ -294,13 +309,23 @@ void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_i
   sa.sin_port        = htons(dst_port);
   sa.sin_addr.s_addr = *((unsigned int *) dst_ip->addr);
   memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
-  
+
+#ifdef HAVE_MSG_PROXY  
   if (source || transparent_proxy) 
+#else
+  if (source) 
+#endif
     memcpy((char *) sa.sin_zero, &local_sa, 8);
   
-  int wr = sendto(rsd, buf, buf_len, 
+#ifdef HAVE_MSG_PROXY
+  int wr = sendto(rsd, buf, buf_len, \
 		  ((source || transparent_proxy) ? MSG_PROXY : 0), \
 		  (struct sockaddr *) &sa, sizeof(sa));
+#else
+  int wr = sendto(rsd, buf, buf_len, 0, \
+		  (struct sockaddr *) &sa, sizeof(sa));
+#endif
+
   if (wr < 0)
     syslog(LOG_ERR, "forward: sendto() failed: %m");
   else if (wr < buf_len)

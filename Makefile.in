@@ -79,7 +79,7 @@ CONFIG_CLEAN_FILES =
 DATA =  $(doc_DATA)
 
 DIST_COMMON =  README ./stamp-h.in COPYING Makefile.am Makefile.in TODO \
-aclocal.m4 config.h.in configure configure.in
+acconfig.h aclocal.m4 config.h.in configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -118,7 +118,7 @@ $(srcdir)/config.h.in: $(srcdir)/stamp-h.in
 		rm -f $(srcdir)/stamp-h.in; \
 		$(MAKE) $(srcdir)/stamp-h.in; \
 	else :; fi
-$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
 	cd $(top_srcdir) && $(AUTOHEADER)
 	@echo timestamp > $(srcdir)/stamp-h.in 2> /dev/null
 

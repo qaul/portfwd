@@ -1,13 +1,14 @@
 /*
   host_map.hpp
 
-  $Id: host_map.hpp,v 1.4 2002/04/13 05:05:39 evertonm Exp $
+  $Id: host_map.hpp,v 1.5 2002/04/15 04:15:51 evertonm Exp $
  */
 
 #ifndef HOST_MAP_HPP
 #define HOST_MAP_HPP
 
 #include <stdio.h>
+
 #include "vector.hpp"
 #include "from_addr.hpp"
 #include "to_addr.hpp"
