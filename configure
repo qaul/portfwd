@@ -694,7 +694,7 @@ fi
 
 PACKAGE=portfwd
 
-VERSION="0.26rc5"
+VERSION="0.26rc6"
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }

@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.9 2003/02/15 03:43:12 evertonm Exp $
+  $Id: forward.cc,v 1.10 2003/02/16 08:10:52 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -221,6 +221,8 @@ int ftp_spawn(struct ip_addr *local_ip, int *local_port, struct ip_addr *remote_
     /* Fork failed */
 
     syslog(LOG_ERR, "FTP spawn: fork() failed: %m");
+
+    socket_close(sd); /* the socket won't be used at all */
     return pid;
   }
 
@@ -228,7 +230,7 @@ int ftp_spawn(struct ip_addr *local_ip, int *local_port, struct ip_addr *remote_
 
     /* Child */
 
-    socket_close(sd);
+    socket_close(sd); /* the child won't use the socket */
     return pid;
   }
 
