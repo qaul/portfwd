@@ -31,8 +31,20 @@ AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(getopt_long select socket strdup strerror)
 
-dnl Checks for preprocessor symbols
-AC_TRY_RUN(tools/have_msg_proxy.c, [AC_DEFINE(HAVE_MSG_PROXY, 1, [Define if you have MSG_PROXY in <sys/socket.h>])])
+dnl Checks for MSG_PROXY symbol
+AC_TRY_RUN(
+[
+#include <sys/socket.h>
+int main()
+{
+#ifdef MSG_PROXY
+  exit(0);
+#else
+  exit(1);
+#endif
+}
+], 
+[AC_DEFINE(HAVE_MSG_PROXY, 1, [Define if you have MSG_PROXY in <sys/socket.h>])])
 
 LIBS="$LIBS $LEXLIB"
 AC_SUBST(LIBS)
