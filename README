@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: README,v 1.6 2002/05/05 10:53:12 evertonm Exp $
+# $Id: README,v 1.7 2002/07/30 13:09:12 evertonm Exp $
 #
 
 LICENSE
@@ -219,7 +219,9 @@ COMMAND LINE OPTIONS
                 original addresses of clients.
 
                 Of course, this feature requires transparent proxy
-                support compiled in your kernel.
+                support compiled in your kernel, e.g.:
+
+			CONFIG_IP_TRANSPARENT_PROXY in Linux kernel.
 
         Debugging
 
