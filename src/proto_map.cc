@@ -1,7 +1,7 @@
 /*
   proto_map.cc
 
-  $Id: proto_map.cc,v 1.2 2001/11/19 19:34:44 evertonm Exp $
+  $Id: proto_map.cc,v 1.3 2002/03/26 03:51:14 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -87,7 +87,7 @@ void proto_map::serve(proto_t proto) const
     break;
 
   case P_UDP:
-    udp_forward(listen, port_list, map_list, uid, gid);
+    udp_forward(listen, local_src, port_list, map_list, uid, gid);
     break;
 
   default:

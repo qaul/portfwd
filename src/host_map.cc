@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.3 2001/09/21 13:50:16 evertonm Exp $
+  $Id: host_map.cc,v 1.4 2002/03/26 03:51:14 evertonm Exp $
  */
 
 #include <string.h>
@@ -75,7 +75,7 @@ int host_map::tcp_match(const struct ip_addr *ip, int port) const
   return 0;
 }
 
-void host_map::udp_forward(const struct sockaddr_in *cli_sa, const struct ip_addr *ip, int port, const char *buf, int buf_len) const
+void host_map::udp_forward(const struct ip_addr *source, const struct sockaddr_in *cli_sa, const struct ip_addr *ip, int port, const char *buf, int buf_len) const
 {
   const struct ip_addr *dst_ip  = dst_addr->get_addr();
   int                  dst_port = dst_addr->get_port();
@@ -88,33 +88,63 @@ void host_map::udp_forward(const struct sockaddr_in *cli_sa, const struct ip_add
 
   int rsd = socket(PF_INET, SOCK_DGRAM, get_protonumber(P_UDP));
   if (rsd == -1) {
-    syslog(LOG_ERR, "forward: Can't create UDP socket: %m");
+    syslog(LOG_ERR, "host_map::udp_forward(): Can't create UDP socket: %m");
     return;
   }
 
-  /* Allow broadcast packets */
+  /* 
+   * Allow outgoing broadcast datagrams
+   */
+#ifndef NO_SO_BROADCAST
   {
     int one = 1;
-    setsockopt(rsd, SOL_SOCKET, SO_BROADCAST, (char *) &one, sizeof(one));
+
+    ONVERBOSE2(syslog(LOG_DEBUG, "Setting SO_BROADCAST for outgoing UDP socket"));
+
+    if (setsockopt(rsd, SOL_SOCKET, SO_BROADCAST, (char *) &one, sizeof(one)))
+      syslog(LOG_ERR, "host_map::udp_forward(): Can't allow broadcast datagrams for outgoing UDP socket: setsockopt(SO_BROADCAST) failed: %m");
   }
+#endif /* NO_SO_BROADCAST */
 
   struct sockaddr_in local_sa;  
-   
+  unsigned int local_sa_len = sizeof(local_sa);
+
   /*
-   * Perform transparent proxy
+   * Bind to user-supplied source address
+   *
+   * NOTE: This overrides transparent proxying.
    */
-  if (transparent_proxy) {
+  if (source) {
 
-    unsigned int local_sa_len = sizeof(local_sa);
+    if (transparent_proxy)
+      syslog(LOG_WARNING, "User-supplied source-address overriding transparent proxying for UDP socket");
 
-    /*
-     * Copy client address
-     */
-    memcpy(&local_sa, cli_sa, local_sa_len);
+    local_sa.sin_family = PF_INET;
+    local_sa.sin_port   = htons(0);
+    local_sa.sin_addr.s_addr = *((unsigned int *) source->addr);
 
-    ONVERBOSE(syslog(LOG_ERR, "host_map::udp_forward: Transparent proxy - \"Binding\" to local address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
+    ONVERBOSE2(syslog(LOG_ERR, "host_map::udp_forward: \"Binding\" to local source address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
+    
   }
 
+  else
+   
+    /*
+     * Perform transparent proxy
+     *
+     * NOTE: User-supplied source address overrides transparent proxying.
+     */
+    if (transparent_proxy) {
+
+      /*
+       * Copy client address
+       */
+      memcpy(&local_sa, cli_sa, local_sa_len);
+      
+      ONVERBOSE2(syslog(LOG_ERR, "host_map::udp_forward: Transparent proxy - \"Binding\" to local address: %s:%d", inet_ntoa(local_sa.sin_addr), ntohs(local_sa.sin_port)));
+      
+    } /* else if (transparent_proxy) */
+  
   /*
    * Destination address
    */
@@ -124,17 +154,19 @@ void host_map::udp_forward(const struct sockaddr_in *cli_sa, const struct ip_add
   sa.sin_addr.s_addr = *((unsigned int *) dst_ip->addr);
   memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
   
-  if (transparent_proxy) memcpy((char *) sa.sin_zero, &local_sa, 8);
+  if (source || transparent_proxy) 
+    memcpy((char *) sa.sin_zero, &local_sa, 8);
   
-  int wr = sendto(rsd, buf, buf_len, (transparent_proxy ? MSG_PROXY : 0),
-                  (struct sockaddr *) &sa, sizeof(sa));
+  int wr = sendto(rsd, buf, buf_len, 
+		  ((source || transparent_proxy) ? MSG_PROXY : 0), \
+		  (struct sockaddr *) &sa, sizeof(sa));
   if (wr < 0)
-    syslog(LOG_ERR, "forward: sendto failed: %m");
+    syslog(LOG_ERR, "forward: sendto() failed: %m");
   else if (wr < buf_len)
     syslog(LOG_ERR, "forward: Partial write on sendto: %m");
 
   if (close(rsd))
-    syslog(LOG_WARNING, "forward: close on socket failed: %m");
+    syslog(LOG_WARNING, "forward: close() on socket failed: %m");
 }
 
 /*

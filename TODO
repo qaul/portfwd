@@ -10,6 +10,9 @@ TODO:
 - save master-process PID to a file
 - support for generic IP forwarding (IPfwd-style)
 - close sockets before exiting on SIGTERM
+- transparent proxy for linux kernel 2.4.x
+- passive ftp support for linux kernel 2.4.x
+- compilation broken in solaris 7
 
 CHANGES:
 
@@ -26,11 +29,10 @@ CHANGES:
 0.23
 ----
 
-- Fix unicast of UDP messages.
-/ Allow specification of local source address for outgoing connections.
++ Allow specification of local source address for outgoing connections.
   Note: this overrides the transparent proxying.
   + for TCP
-  - for UDP
+  + for UDP
 
 ----
 0.22
