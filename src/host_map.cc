@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.5 2002/04/12 21:22:30 evertonm Exp $
+  $Id: host_map.cc,v 1.6 2002/04/12 22:32:24 evertonm Exp $
  */
 
 #include <string.h>
@@ -49,6 +49,8 @@ void host_map::show() const
  */
 int host_map::pipe(int sd, const struct ip_addr *ip, int port)
 {
+  const int tmp_len = 32;
+  char tmp[tmp_len];
 
   /*
    * Scan all destination addresses
@@ -66,8 +68,6 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
     const struct ip_addr *dst_ip  = dst_addr->get_addr();
     int                  dst_port = dst_addr->get_port();
     
-    const int tmp_len = 32;
-    char tmp[tmp_len];
     safe_strcpy(tmp, addrtostr(ip), tmp_len); 
 
     ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: trying: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
@@ -86,6 +86,8 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
 
       /*
        * Switch to next address
+       *
+       * NOTE: This code is duplicate below.
        */
       next_dst_index = (next_dst_index + 1) % dst_list->get_size();
       if (next_dst_index == last_dst_index) {
@@ -99,6 +101,17 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
     ONVERBOSE2(syslog(LOG_DEBUG, "TCP pipe: connected: %s:%d => %s:%d", tmp, port, addrtostr(dst_ip), dst_port));
     
     break;
+  }
+
+  /*
+   * Switch to next address
+   *
+   * NOTE: This code is duplicated above.
+   */
+  next_dst_index = (next_dst_index + 1) % dst_list->get_size();
+  if (next_dst_index == last_dst_index) {
+    syslog(LOG_ERR, "TCP pipe: Can't forward incoming connection from %s:%d to any destination", tmp, port);
+    return -1;
   }
   
   return 0;
