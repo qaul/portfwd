@@ -12,10 +12,7 @@ TODO:
 - close sockets before exiting on SIGTERM
 - transparent proxy for linux kernel 2.4.x
 - passive ftp support for linux kernel 2.4.x
-- compilation broken on systems lacking MSG_PROXY
-  - solaris 7
-  - AIX
-  - others
+- program choking under load (bug report at http://portfwd.sf.net)?
 
 
 CHANGES:
@@ -33,6 +30,7 @@ CHANGES:
 0.23
 ----
 
++ Compilation under systems lacking MSG_PROXY.
 + Allow multiple destination addresses for simple round-robin load balancing.
   (See cfg/load-balance.cfg)
   + for TCP
