@@ -1,7 +1,7 @@
 .\" -*-Nroff-*-
-.\" $Id: portfwd.8,v 1.1 2001/05/15 00:24:55 evertonm Exp $
+.\" $Id: portfwd.8,v 1.2 2001/07/08 04:35:17 evertonm Exp $
 .\""
-.TH Portfwd 8 2001-03-26 "The Port Forwarding Daemon"
+.TH Portfwd 8 2001-07-08 "The Port Forwarding Daemon"
 .\""
 .SH NAME
 Portfwd \- Port forwarding daemon
@@ -52,6 +52,12 @@ This switch enables transparent proxying. If you intend to forward
 data to hosts behind your masquerading firewall, you probably want
 this option turned on; it allows your servers to see true IP addresses
 of clients.
+.TP
+.B \-f, \-\-on\-the\-fly\-dns
+Portfwd usually solves all DNS hostnames upon startup. Specify the -f
+option if you want the destination hostnames be updated on demand. Be
+aware this can affect TCP connection times and the whole UDP
+forwarding performance.
 .TP
 .B \-c, \-\-config config\-file
 This argument allows specification of a configuration file other than

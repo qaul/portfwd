@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: README,v 1.1 2001/05/15 00:24:41 evertonm Exp $
+# $Id: README,v 1.2 2001/07/08 04:35:17 evertonm Exp $
 #
 
 LICENSE
@@ -142,6 +142,14 @@ COMMAND LINE OPTIONS
 
                 Use -c <config_file_path> to specify the location of
                 your configuration file.
+
+        On-the-fly DNS
+
+                Portfwd usually solves all DNS hostnames upon
+                startup. Specify the -f option if you want the
+                destination hostnames be updated on demand. Be aware
+                this can affect TCP connection times and the whole UDP
+                forwarding performance.
 
         Transparent Proxy
 
