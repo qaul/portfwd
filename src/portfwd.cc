@@ -1,7 +1,7 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.2 2001/07/08 04:25:48 evertonm Exp $
+  $Id: portfwd.cc,v 1.3 2002/04/15 02:15:04 evertonm Exp $
  */
 
 
@@ -52,10 +52,12 @@ void show_version(FILE *out)
   fprintf(out, "%s %s\n", get_prog_name(), portfwd_version);
 }
 
+#
 void parse_cmdline(int argc, const char *argv[], const char **config)
 {
   const char * me = argv[0];
-  const char * const DEFAULT_CONFIG = "portfwd.cfg";
+  const char * const DEFAULT_CONFIG = PORTFWD_CONF;
+
   int opt;
   int option_index = 0;
   struct option long_options[] =

@@ -1,5 +1,5 @@
-CXXFLAGS = -Wall -ggdb -O3
-CFLAGS   = -Wall -ggdb -O3
+CXXFLAGS = -Wall -ggdb -O3 -DPORTFWD_CONF=\"$(sysconfdir)/portfwd.cfg\"
+CFLAGS   = -Wall -ggdb -O3 -DPORTFWD_CONF=\"$(sysconfdir)/portfwd.cfg\"
 INCLUDES = -I$(top_srcdir)/src
 
 sbin_PROGRAMS = portfwd
