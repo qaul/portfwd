@@ -34,6 +34,7 @@
 #include "port_pair.h"
 #include "proto_map.hpp"
 #include "entry.hpp"
+#include "portfwd.h"
 
 extern int yylex();
 extern char yytext[];
@@ -101,11 +102,13 @@ net_portion *use_hostprefix(char *hostname, int prefix_len)
 
 to_addr *use_toaddr(char *hostname, int port)
 {
-  return new to_addr(use_hostname(hostname), port);
+  return new to_addr(on_the_fly_dns ? safe_strdup(hostname) : 0, 
+		     use_hostname(hostname), 
+		     port);
 }
 
 
-#line 111 "conf.y"
+#line 114 "conf.y"
 typedef union {
 	int	           int_type;
         char               *str_type;
@@ -120,7 +123,7 @@ typedef union {
 	vector<proto_map*> *map_list_type;
 	entry		   *entry_type;
 } YYSTYPE;
-#line 140 "conf.y"
+#line 143 "conf.y"
 
   /* Simbolo nao-terminal inicial */
 #include <stdio.h>
@@ -199,10 +202,10 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   148,   148,   151,   151,   154,   154,   157,   157,   158,   161,
-   161,   164,   165,   167,   169,   173,   179,   181,   185,   189,
-   194,   201,   203,   207,   213,   217,   223,   229,   233,   239,
-   241,   244,   247,   252,   257,   257,   260,   263,   267,   271
+   151,   151,   154,   154,   157,   157,   160,   160,   161,   164,
+   164,   167,   168,   170,   172,   176,   182,   184,   188,   192,
+   197,   204,   206,   210,   216,   220,   226,   232,   236,   242,
+   244,   247,   250,   255,   260,   260,   263,   266,   270,   274
 };
 #endif
 
@@ -831,43 +834,43 @@ yyreduce:
   switch (yyn) {
 
 case 5:
-#line 154 "conf.y"
+#line 157 "conf.y"
 { entry_vector-> push(yyvsp[0].entry_type); ;
     break;}
 case 7:
-#line 157 "conf.y"
+#line 160 "conf.y"
 { conf_user = solve_user(conf_ident); ;
     break;}
 case 8:
-#line 158 "conf.y"
+#line 161 "conf.y"
 { conf_group = solve_group(conf_ident); ;
     break;}
 case 9:
-#line 159 "conf.y"
+#line 162 "conf.y"
 { conf_bind = solve_hostname(conf_ident); ;
     break;}
 case 10:
-#line 161 "conf.y"
+#line 164 "conf.y"
 { yyval.entry_type = new entry(P_TCP, yyvsp[0].map_list_type); ;
     break;}
 case 11:
-#line 162 "conf.y"
+#line 165 "conf.y"
 { yyval.entry_type = new entry(P_UDP, yyvsp[0].map_list_type); ;
     break;}
 case 12:
-#line 164 "conf.y"
+#line 167 "conf.y"
 { set_protoname(P_TCP); ;
     break;}
 case 13:
-#line 165 "conf.y"
+#line 168 "conf.y"
 { set_protoname(P_UDP); ;
     break;}
 case 14:
-#line 167 "conf.y"
+#line 170 "conf.y"
 { yyval.map_list_type = yyvsp[-1].map_list_type; ;
     break;}
 case 15:
-#line 169 "conf.y"
+#line 172 "conf.y"
 {
 			map_vector = new vector<proto_map*>();
 			map_vector->push(yyvsp[0].map_type);
@@ -875,34 +878,34 @@ case 15:
 		;
     break;}
 case 16:
-#line 174 "conf.y"
+#line 177 "conf.y"
 {
 			map_vector->push(yyvsp[0].map_type);
 			yyval.map_list_type = map_vector;
 		;
     break;}
 case 17:
-#line 179 "conf.y"
+#line 182 "conf.y"
 {
 			yyval.map_type = new proto_map(yyvsp[-3].port_list_type, yyvsp[-1].host_list_type, 0, 0, conf_user, conf_group, conf_bind);
 		;
     break;}
 case 18:
-#line 182 "conf.y"
+#line 185 "conf.y"
 {
 		        struct ip_addr ip = use_hostname(yyvsp[-3].str_type);
 			yyval.map_type = new proto_map(yyvsp[-5].port_list_type, yyvsp[-1].host_list_type, &ip, 0, conf_user, conf_group, conf_bind);
 		;
     break;}
 case 19:
-#line 186 "conf.y"
+#line 189 "conf.y"
 {
 		        struct ip_addr ip = use_hostname(yyvsp[-3].str_type);
 			yyval.map_type = new proto_map(yyvsp[-5].port_list_type, yyvsp[-1].host_list_type, 0, &ip, conf_user, conf_group, conf_bind);
 		;
     break;}
 case 20:
-#line 190 "conf.y"
+#line 193 "conf.y"
 {
 		        struct ip_addr ip1 = use_hostname(yyvsp[-5].str_type);
 		        struct ip_addr ip2 = use_hostname(yyvsp[-3].str_type);
@@ -910,7 +913,7 @@ case 20:
 		;
     break;}
 case 21:
-#line 195 "conf.y"
+#line 198 "conf.y"
 {
 		        struct ip_addr ip1 = use_hostname(yyvsp[-5].str_type);
 		        struct ip_addr ip2 = use_hostname(yyvsp[-3].str_type);
@@ -918,11 +921,11 @@ case 21:
 		;
     break;}
 case 22:
-#line 201 "conf.y"
+#line 204 "conf.y"
 { yyval.str_type = safe_strdup(conf_ident); ;
     break;}
 case 23:
-#line 203 "conf.y"
+#line 206 "conf.y"
 {
 			port_vector = new vector<int>();
 			port_vector->push(use_port(yyvsp[0].str_type));
@@ -930,14 +933,14 @@ case 23:
 		;
     break;}
 case 24:
-#line 208 "conf.y"
+#line 211 "conf.y"
 {
 			port_vector->push(use_port(yyvsp[0].str_type));
 			yyval.port_list_type = port_vector; 
 		;
     break;}
 case 25:
-#line 213 "conf.y"
+#line 216 "conf.y"
 {
               		host_vector = new vector<host_map*>();
 			host_vector->push(yyvsp[0].host_map_type);
@@ -945,14 +948,14 @@ case 25:
 		;
     break;}
 case 26:
-#line 218 "conf.y"
+#line 221 "conf.y"
 {
 			host_vector->push(yyvsp[0].host_map_type);
 			yyval.host_list_type = host_vector;
 		;
     break;}
 case 27:
-#line 223 "conf.y"
+#line 226 "conf.y"
 {
 			int port = use_port(yyvsp[0].str_type);
 			to_addr *to = use_toaddr(yyvsp[-2].str_type, port); /* new to_addr() */
@@ -960,7 +963,7 @@ case 27:
 		;
     break;}
 case 28:
-#line 229 "conf.y"
+#line 232 "conf.y"
 {
 			from_vector = new vector<from_addr*>();
 			from_vector->push(yyvsp[0].from_type);
@@ -968,74 +971,74 @@ case 28:
 		;
     break;}
 case 29:
-#line 234 "conf.y"
+#line 237 "conf.y"
 {
 			from_vector->push(yyvsp[0].from_type);
 			yyval.from_list_type = from_vector;
 		;
     break;}
 case 30:
-#line 239 "conf.y"
+#line 242 "conf.y"
 { 
 			yyval.from_type = new from_addr(new net_portion(solve_hostname(ANY_ADDR), MIN_MASK_LEN), new port_pair(FIRST_PORT, LAST_PORT)); 
 		;
     break;}
 case 31:
-#line 242 "conf.y"
+#line 245 "conf.y"
 { 
 			yyval.from_type = new from_addr(yyvsp[0].net_type, new port_pair(FIRST_PORT, LAST_PORT)); 
 		;
     break;}
 case 32:
-#line 245 "conf.y"
+#line 248 "conf.y"
 { 
 			yyval.from_type = new from_addr(new net_portion(solve_hostname(ANY_ADDR), MIN_MASK_LEN), yyvsp[0].port_type); 
 		;
     break;}
 case 33:
-#line 248 "conf.y"
+#line 251 "conf.y"
 { 
 			yyval.from_type = new from_addr(yyvsp[-2].net_type, yyvsp[0].port_type); 
 		;
     break;}
 case 34:
-#line 252 "conf.y"
+#line 255 "conf.y"
 { 
 			/* use_hostprefix(): new net_portion() */
   			yyval.net_type = use_hostprefix(yyvsp[-1].str_type, yyvsp[0].int_type); 
 		;
     break;}
 case 35:
-#line 257 "conf.y"
+#line 260 "conf.y"
 { yyval.int_type = MAX_MASK_LEN; ;
     break;}
 case 36:
-#line 258 "conf.y"
+#line 261 "conf.y"
 { yyval.int_type = mask_len_value(conf_ident); ;
     break;}
 case 37:
-#line 260 "conf.y"
+#line 263 "conf.y"
 {
 			int port = use_port(yyvsp[0].str_type);
 			yyval.port_type = new port_pair(port, port);
 		;
     break;}
 case 38:
-#line 264 "conf.y"
+#line 267 "conf.y"
 { 
 			yyval.port_type = new port_pair(use_port(yyvsp[-1].str_type), 
 					   LAST_PORT); 
 		;
     break;}
 case 39:
-#line 268 "conf.y"
+#line 271 "conf.y"
 { 
 			yyval.port_type = new port_pair(FIRST_PORT, 
 				           use_port(yyvsp[0].str_type)); 
 		;
     break;}
 case 40:
-#line 272 "conf.y"
+#line 275 "conf.y"
 { 
 			yyval.port_type = new port_pair(use_port(yyvsp[-2].str_type),
 				           use_port(yyvsp[0].str_type));
@@ -1263,7 +1266,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 278 "conf.y"
+#line 281 "conf.y"
 
 
 /* C code */

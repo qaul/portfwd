@@ -1,16 +1,10 @@
 #! /bin/sh
 #
-# Crash FTP forwarding on Portfwd 0.13
-#
 # $1 = turns
 # $2 = delay
 
-do_fd_leak() {
-pftp -ni 127.0.0.1 10000 << __EOF__
-user everton nike=1T
-ls
-quit
-__EOF__
+trigger_dns() {
+nc -n 127.0.0.1 2000 </dev/null >/dev/null
 }
 
 t=30
@@ -23,6 +17,6 @@ while [ $t -gt 0 ]; do
 	echo "turns to go: $t"
 	echo "sleeping $d seconds"
 	sleep $d
-	do_fd_leak
+	trigger_dns
 	t=$(($t - 1))
 done

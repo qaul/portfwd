@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.1 2001/05/15 00:24:59 evertonm Exp $
+  $Id: host_map.cc,v 1.2 2001/07/08 04:25:48 evertonm Exp $
  */
 
 #include <string.h>
@@ -54,7 +54,7 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port) const
   memset((char *) sa.sin_zero, 0, sizeof(sa.sin_zero));
 
   if (connect(sd, (struct sockaddr *) &sa, sizeof(sa))) {
-    syslog(LOG_ERR, "pipe: Can't connect to %s:%d: %m", inet_ntoa(sa.sin_addr), port);
+    syslog(LOG_ERR, "pipe: Can't connect to %s:%d: %m", inet_ntoa(sa.sin_addr), dst_port);
     return -1;
   }
 

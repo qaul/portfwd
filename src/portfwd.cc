@@ -1,7 +1,7 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.1 2001/05/15 00:24:59 evertonm Exp $
+  $Id: portfwd.cc,v 1.2 2001/07/08 04:25:48 evertonm Exp $
  */
 
 
@@ -32,6 +32,7 @@ const int BUF_SZ = 8192;
 const char * const portfwd_version = VERSION;
 
 int transparent_proxy = 0;
+int on_the_fly_dns = 0;
 
 void usage(FILE *out) 
 {
@@ -41,6 +42,7 @@ void usage(FILE *out)
 	       "       -v               | --version\n"
 	       "       -d               | --debug\n"
                "       -t               | --transparent-proxy\n"
+	       "       -f               | --on-the-fly-dns\n"
 	       "       -c <config-file> | --config <config-file>\n",
 	  prog);
 }
@@ -62,6 +64,7 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
     {"version", 0, 0, 'v'},
     {"debug", 0, 0, 'd'},
     {"transparent-proxy", 0, 0, 't'},
+    {"on-the-fly-dns", 0, 0, 'f'},
     {"config", 1, 0, 'c'},
     {0, 0, 0, 0}
   };
@@ -70,7 +73,7 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
 
   for (;;) {
 		 
-    opt = getopt_long(argc, (char ** const) argv, "hvdtc:", long_options, &option_index);
+    opt = getopt_long(argc, (char ** const) argv, "hvdtfc:", long_options, &option_index);
     if (opt == -1)
       break;
 
@@ -88,6 +91,9 @@ void parse_cmdline(int argc, const char *argv[], const char **config)
       break;
     case 't':
       ++transparent_proxy;
+      break;
+    case 'f':
+      ++on_the_fly_dns;
       break;
     case 'c':
       if (*config) {
@@ -245,9 +251,12 @@ int main(int argc, const char *argv[])
    */
   openlog(get_prog_name(), LOG_CONS | LOG_PID, LOG_DAEMON);
   syslog(LOG_INFO, "%s %s started", get_prog_name(), portfwd_version);
+
   ONVERBOSE(syslog(LOG_DEBUG, "Verbose mode: %d", verbose_mode));
 
   ONVERBOSE(syslog(LOG_INFO, "Transparent proxy mode: %s (%d)", transparent_proxy ? "on" : "off", transparent_proxy));
+
+  ONVERBOSE(syslog(LOG_INFO, "On the fly DNS mode: %s (%d)", on_the_fly_dns ? "on" : "off", on_the_fly_dns));
 
   /*
    * Go to background.

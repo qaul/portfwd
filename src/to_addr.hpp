@@ -1,7 +1,7 @@
 /*
   to_addr.hpp
   
-  $Id: to_addr.hpp,v 1.1 2001/05/15 00:25:01 evertonm Exp $
+  $Id: to_addr.hpp,v 1.2 2001/07/08 04:25:48 evertonm Exp $
  */
 
 #ifndef TO_ADDR_HPP
@@ -15,12 +15,14 @@
 class to_addr
 {
 private:
+  char           *name;
   struct ip_addr address;
   int            port;
 
 public:
-  to_addr(struct ip_addr addr, int prt) 
+  to_addr(char *hostname, struct ip_addr addr, int prt) 
     {
+      name    = hostname;
       address = addr;
       port    = prt;
     }

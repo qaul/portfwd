@@ -1,7 +1,7 @@
 /*
   conf.y
 
-  $Id: conf.y,v 1.1 2001/05/15 00:25:02 evertonm Exp $
+  $Id: conf.y,v 1.2 2001/07/08 04:25:48 evertonm Exp $
 */
 
 %{
@@ -15,6 +15,7 @@
 #include "port_pair.h"
 #include "proto_map.hpp"
 #include "entry.hpp"
+#include "portfwd.h"
 
 extern int yylex();
 extern char yytext[];
@@ -82,7 +83,9 @@ net_portion *use_hostprefix(char *hostname, int prefix_len)
 
 to_addr *use_toaddr(char *hostname, int port)
 {
-  return new to_addr(use_hostname(hostname), port);
+  return new to_addr(on_the_fly_dns ? safe_strdup(hostname) : 0, 
+		     use_hostname(hostname), 
+		     port);
 }
 
 %}
