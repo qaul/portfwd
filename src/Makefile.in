@@ -68,7 +68,8 @@ REAL_CC = @REAL_CC@
 VERSION = @VERSION@
 YACC = @YACC@
 
-CFLAGS = -Wall -O2
+CXXFLAGS = -Wall -g -O3
+CFLAGS = -Wall -g -O3
 INCLUDES = -I$(top_srcdir)/src
 
 sbin_PROGRAMS = portfwd
@@ -91,7 +92,6 @@ lexconf.o util.o
 portfwd_LDADD = $(LDADD)
 portfwd_DEPENDENCIES =  getopt.o getopt1.o
 portfwd_LDFLAGS = 
-CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@

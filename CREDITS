@@ -1,7 +1,7 @@
 #
 # CREDITS
 #
-# $Id: CREDITS,v 1.1 2001/05/15 00:24:40 evertonm Exp $
+# $Id: CREDITS,v 1.2 2001/07/08 02:41:55 evertonm Exp $
 #
 
 The following people has made important contribution to Portfwd.
@@ -24,3 +24,4 @@ Alexander Bartolich <alba@users.sourceforge.net>
   - #include patch for RedHat 7.0
 
 Marc Merlin <marc@merlins.org>
+  - Several requests for improvement.

@@ -1,4 +1,5 @@
-CFLAGS = -Wall -O2
+CXXFLAGS = -Wall -g -O3
+CFLAGS   = -Wall -g -O3
 INCLUDES = -I$(top_srcdir)/src
 
 sbin_PROGRAMS = portfwd

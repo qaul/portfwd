@@ -5,29 +5,32 @@ TODO:
   (could not reproduce yet)
   (maybe fixed in 0.16 SIGPIPE change?)
   (some reports suggest this was fixed in 0.16)
-
 - improve bind-addr config syntax
-
 - non-forking version with support to forwarding port ranges?
-
 - save master-process PID to a file
-
 - support for generic IP forwarding
-
 - close sockets before exiting on SIGTERM
-
-- transparent proxy control per ruleset
+- Marc Merlin <marc@merlins.org> suggestion:
+  - transparent proxy control per ruleset
 
 CHANGES:
 
 ----
-0.20
+0.21
 ----
 
 - Marc Merlin <marc@merlins.org> suggestions:
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
-  - Fix Debian init script.
+
+----
+0.20
+----
+
+- Zachary Frederick <zfrederick@tuscano.com> suggestion:
+  - On-the-fly name resolution.
+- Marc Merlin <marc@merlins.org> suggestion:
+  - Fix Debian init script to prevent it from killing itself.
 
 ----
 0.19

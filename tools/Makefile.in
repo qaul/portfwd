@@ -68,6 +68,7 @@ REAL_CC = @REAL_CC@
 VERSION = @VERSION@
 YACC = @YACC@
 
+CXXFLAGS = -Wall -g -O3
 INCLUDES = -I$(top_srcdir)/src
 
 noinst_PROGRAMS = t_vector udp_rcv udp_snd
@@ -96,7 +97,6 @@ udp_snd_OBJECTS =  udp_snd.o
 udp_snd_LDADD = $(LDADD)
 udp_snd_DEPENDENCIES = 
 udp_snd_LDFLAGS = 
-CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@

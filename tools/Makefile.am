@@ -1,3 +1,4 @@
+CXXFLAGS = -Wall -g -O3
 INCLUDES = -I$(top_srcdir)/src
 
 noinst_PROGRAMS = t_vector udp_rcv udp_snd
