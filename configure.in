@@ -31,9 +31,14 @@ AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(getopt_long select socket strdup strerror)
 
-dns Checks for includes declarations.
-AC_CHECK_DECL(getopt,,includes=stdlib.h)
+dnl Checks for includes declarations.
+dnl
+dnl Only for Autoconf 2.50+:
+dnl AC_CHECK_DECLS([getopt], , , includes=stdlib.h)
 
+AC_EGREP_HEADER(getopt, <stdlib.h>,
+[AC_DEFINE(HAVE_STDLIB_DECL_GETOPT, 1, [Define if you have the getopt(...) declared in <stdlib.h>])]
+)
 
 dnl Checks for MSG_PROXY symbol
 AC_TRY_RUN(

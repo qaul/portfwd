@@ -91,6 +91,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if you have the getopt(...) declared in <stdlib.h> */
+#undef HAVE_STDLIB_DECL_GETOPT
+
 /* Define if you have MSG_PROXY in <sys/socket.h> */
 #undef HAVE_MSG_PROXY
 
