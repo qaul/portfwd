@@ -24,6 +24,12 @@ TODO:
 CHANGES:
 
 ----
+0.26
+----
+
++ Portability fix: replace AF_LOCAL by AF_UNIX.
+
+----
 0.25
 ----
 

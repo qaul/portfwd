@@ -1,8 +1,9 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.7 2002/05/08 03:50:03 evertonm Exp $
+  $Id: director.cc,v 1.8 2002/07/11 13:45:40 evertonm Exp $
  */
+
 
 #include <syslog.h>
 #include <string.h>
@@ -18,6 +19,7 @@
 #include "solve.h"
 #include "vector.hpp"
 #include "director.hpp"
+
 
 void director::close_sockets()
 {
@@ -44,7 +46,7 @@ void director::run(char *argv[])
   /*
    * Create unix domain socket
    */
-  if (socketpair(AF_LOCAL, SOCK_STREAM, 0, fd)) {
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fd)) {
     syslog(LOG_ERR, "Failure creating unix domain socket: %m");
     return;
   }
