@@ -14,21 +14,27 @@ TODO:
 - close sockets before exiting on SIGTERM
 - transparent proxy for linux kernel 2.4.x
 - passive ftp support for linux kernel 2.4.x
+- Marc Merlin suggestions:
+  - Transparent proxy control per ruleset.
+  - Issue fatal errors to stderr.
+  - Try to bind to local address multiple times (specified by user).
   
 
 
 CHANGES:
 
 ----
+0.25
+----
+
+- External destination selector.
+
+----
 0.24
 ----
 
-- Marc Merlin suggestions:
-  - Transparent proxy control per ruleset.
-  - Issue fatal errors to stderr.
-  - Try to bind to local address multiple times (specified by user).
-
-+ Fix: Check for failure on creation of tcp outgoing socket.
++ Check for failure on creation of tcp outgoing socket.
++ Features added to README.
 
 ----
 0.23

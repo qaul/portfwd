@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: README,v 1.4 2002/04/20 20:27:33 evertonm Exp $
+# $Id: README,v 1.5 2002/05/05 04:39:42 evertonm Exp $
 #
 
 LICENSE
@@ -32,6 +32,56 @@ INTRODUCTION
         packets to remote hosts.
 
         My apologies for my poor English. Corrections are welcome.
+
+FEATURES
+
+        -- Forwarding of TCP segments.
+
+        -- Forwarding of UDP datagrams.
+
+        -- Forwarding of FTP in active and/or passive modes.
+
+        -- Transparent proxying available under Linux. Portfwd detects
+        such facility in "./configure" time by searching the
+        definition of MSG_PROXY in <sys/socket.h>.
+
+        -- DNS names for destination hosts can be resolved upon
+        start-up or on demand (see "on-the-fly" DNS option).
+
+        -- Portfwd can listen on specific local addresses.
+
+        -- Source addresses for outgoing connections can be explicitly
+        specified or automatically selected by the system.
+
+        -- Structured configuration language allows specification of
+        multiple simultaneous forwarding processes.
+
+        -- Portfwd spawns one forwarder process for each set of ports
+        which are subject to the same rules. Within a process, Portfwd
+        uses a select()-based event-loop to concurrently handle
+        several network events. There is no threading. There is no
+        further process creation after the startup of the configured
+        daemons.
+
+        -- The destination of a connection/datagram can be selected
+        based on its source address/port pair.
+
+        -- Portfwd allows simple round-robin load-balancing through
+        specification of multiple destinations.
+
+LIMITATIONS
+
+        -- Port ranges cannot be forwarded. Ports must be specified in
+        a one-by-one basis.
+
+        -- Specification of source address for outgoing UDP datagrams
+        require transparent proxy support available in the OS kernel.
+
+        -- The daemon must be restarted in order to update its
+        configuration.
+
+        -- A forwarding process blocks on some system calls, such as
+        connect().
 
 BUILDING
 
@@ -138,10 +188,10 @@ COMMAND LINE OPTIONS
 
                 Option -h provides brief help on command line syntax.
 
-	Running in Foreground
+        Running in Foreground
 
-		The -g switch prevents Portfwd from going to
-		background.
+                The -g switch prevents Portfwd from going to
+                background.
 
         Configuration File
 
