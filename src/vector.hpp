@@ -1,12 +1,13 @@
 // vector.hpp
 //
-// $Id: vector.hpp,v 1.1 2001/05/15 00:25:01 evertonm Exp $
+// $Id: vector.hpp,v 1.2 2002/04/13 17:21:27 evertonm Exp $
 
 
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
 #include <syslog.h>
+#include <stdlib.h>
 #include <iostream.h>
 #include "iterator.hpp"
 #include "util.hpp"

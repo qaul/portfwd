@@ -34,6 +34,7 @@ CHANGES:
 ----
 
 + Allow multiple destination addresses for simple round-robin load balancing.
+  (See cfg/load-balance.cfg)
   + for TCP
   + for UDP
 + Allow specification of local source address for outgoing connections.
