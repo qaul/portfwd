@@ -1,7 +1,7 @@
 /*
   host_map.cc
 
-  $Id: host_map.cc,v 1.6 2002/04/12 22:32:24 evertonm Exp $
+  $Id: host_map.cc,v 1.7 2002/04/13 03:33:55 evertonm Exp $
  */
 
 #include <string.h>
@@ -86,8 +86,6 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
 
       /*
        * Switch to next address
-       *
-       * NOTE: This code is duplicate below.
        */
       next_dst_index = (next_dst_index + 1) % dst_list->get_size();
       if (next_dst_index == last_dst_index) {
@@ -105,14 +103,8 @@ int host_map::pipe(int sd, const struct ip_addr *ip, int port)
 
   /*
    * Switch to next address
-   *
-   * NOTE: This code is duplicated above.
    */
   next_dst_index = (next_dst_index + 1) % dst_list->get_size();
-  if (next_dst_index == last_dst_index) {
-    syslog(LOG_ERR, "TCP pipe: Can't forward incoming connection from %s:%d to any destination", tmp, port);
-    return -1;
-  }
   
   return 0;
 }
