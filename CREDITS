@@ -1,7 +1,7 @@
 #
 # CREDITS
 #
-# $Id: CREDITS,v 1.7 2002/09/18 18:52:16 evertonm Exp $
+# $Id: CREDITS,v 1.8 2003/02/15 03:17:12 evertonm Exp $
 #
 
 The following people has made important contribution to Portfwd. They
@@ -40,3 +40,6 @@ Patrik Radman
 
 Jens Wolter <jens.wolter sercon.de>
   - Port to AIX.
+
+Bob Samway
+  - Bug hunting.

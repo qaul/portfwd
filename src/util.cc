@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.8 2002/05/08 03:50:03 evertonm Exp $
+  $Id: util.cc,v 1.9 2003/02/15 03:17:15 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -178,8 +178,6 @@ int daemonize()
 void socket_close(int fd) 
 {
   DEBUGFD(syslog(LOG_DEBUG, "socket_close() on socket FD %d", fd));
-  if (shutdown(fd, 0)) 
-    syslog(LOG_ERR, "socket_close(): shutdown() on socket FD %d failed: %m", fd);
   if (close(fd))
     syslog(LOG_ERR, "socket_close(): close() on socket FD %d failed: %m", fd);
 }
