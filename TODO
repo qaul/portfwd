@@ -29,6 +29,7 @@ CHANGES:
 
 + Portability fix for Solaris: replace AF_LOCAL by AF_UNIX.
 + Portability fix for FreeBSD: #include <sys/types.h>.
++ CONFIG_IP_TRANSPARENT_PROXY added to README.
 
 ----
 0.25
