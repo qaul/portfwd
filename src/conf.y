@@ -1,7 +1,7 @@
 /*
   conf.y
 
-  $Id: conf.y,v 1.3 2001/11/19 19:34:44 evertonm Exp $
+  $Id: conf.y,v 1.4 2002/04/12 16:16:16 evertonm Exp $
 */
 
 %{
@@ -49,6 +49,7 @@ void yyerror(const char *msg)
 
 proto_t curr_proto;
 vector<from_addr*> *from_vector;
+vector<to_addr*>   *dst_vector;
 vector<host_map*>  *host_vector;
 vector<int>        *port_vector;
 vector<proto_map*> *map_vector;
@@ -133,6 +134,8 @@ to_addr *use_toaddr(char *hostname, int port)
         net_portion        *net_type;
 	from_addr   	   *from_type;
 	vector<from_addr*> *from_list_type;
+	to_addr   	   *dst_type;
+	vector<to_addr*>   *dst_list_type;
 	host_map           *host_map_type;
 	vector<host_map*>  *host_list_type;
 	vector<int>        *port_list_type;
@@ -147,6 +150,8 @@ to_addr *use_toaddr(char *hostname, int port)
 %type <net_type>        host_prefix;
 %type <from_type>       from;
 %type <from_list_type>  from_list;
+%type <dst_type>        dst;
+%type <dst_list_type>   dst_list;
 %type <host_map_type>   host_map;
 %type <host_list_type>  host_list;
 %type <port_list_type>  port_list;
@@ -243,11 +248,24 @@ host_list:	host_map {
 			$$ = host_vector;
 		} ;
 
-host_map:	from_list TK_ARROW name TK_COLON name {
-			int port = use_port($5);
-			to_addr *to = use_toaddr($3, port); /* new to_addr() */
-			$$ = new host_map($1, to);
+host_map:	from_list TK_ARROW dst_list {
+			$$ = new host_map($1, $3);
 		} ;
+
+dst_list:       dst {
+			dst_vector = new vector<to_addr*>();
+			dst_vector->push($1);
+			$$ = dst_vector;
+                } |
+                dst_list TK_COMMA dst {
+			dst_vector->push($3);
+			$$ = dst_vector;
+                } ;
+
+dst:            name TK_COLON name {
+			int port = use_port($3);   /* solve portname */
+			$$ = use_toaddr($1, port); /* new to_addr() */
+                } ;
 
 from_list:	from {
 			from_vector = new vector<from_addr*>();

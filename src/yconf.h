@@ -5,6 +5,8 @@ typedef union {
         net_portion        *net_type;
 	from_addr   	   *from_type;
 	vector<from_addr*> *from_list_type;
+	to_addr   	   *dst_type;
+	vector<to_addr*>   *dst_list_type;
 	host_map           *host_map_type;
 	vector<host_map*>  *host_list_type;
 	vector<int>        *port_list_type;
