@@ -1,10 +1,11 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.8 2002/07/11 13:45:40 evertonm Exp $
+  $Id: director.cc,v 1.9 2002/07/11 14:33:00 evertonm Exp $
  */
 
 
+#include <sys/types.h>
 #include <syslog.h>
 #include <string.h>
 #include <errno.h>
