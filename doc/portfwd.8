@@ -1,7 +1,7 @@
 .\" -*-Nroff-*-
-.\" $Id: portfwd.8,v 1.2 2001/07/08 04:35:17 evertonm Exp $
+.\" $Id: portfwd.8,v 1.3 2002/05/06 00:49:40 evertonm Exp $
 .\""
-.TH Portfwd 8 2001-07-08 "The Port Forwarding Daemon"
+.TH Portfwd 8 2002-05-05 "The Port Forwarding Daemon"
 .\""
 .SH NAME
 Portfwd \- Port forwarding daemon
@@ -13,7 +13,7 @@ Portfwd \- Port forwarding daemon
 -v
 .br
 .B portfwd
-[-d ...] [-t] [ -c
+[-d ...] [-g] [-t] [ -c
 .I "config-file"
 ]
 .SH "DESCRIPTION"
@@ -24,8 +24,9 @@ program.
 .B Portfwd
 stands for port forwarding daemon. It's a small userland tool which
 forwards incoming TCP connections and/or UDP datagrams to remote
-hosts. There is support for FTP forwarding, transparent proxy and a
-few other minor features.
+hosts. There is support for FTP forwarding, transparent proxy, DNS on
+demand, simple round-robin load-balacing, external destination
+selectors and other minor features.
 .PP
 This author's English skills are very bad as he's not a native speaker
 of that language -- please feel free to contribute fixes for this page
@@ -47,6 +48,9 @@ are meaningful. Failure messages are sent to the system log under
 .B daemon
 facility.
 .TP
+.B \-g, \-\-foreground
+Specify this option to keep the daemon running in foregroud.
+.TP
 .B \-t, \-\-transparent\-proxy
 This switch enables transparent proxying. If you intend to forward
 data to hosts behind your masquerading firewall, you probably want
@@ -66,8 +70,8 @@ the hard-coded default.
 is the full pathname to the configuration file.
 .SH FILES
 .TP
-.I /etc/portfwd.cfg
-Default configuration file.
+.I /usr/local/etc/portfwd.cfg
+Default configuration file. This may be changed by the "configure" script in compile time.
 .SH SIGNALS
 .TP
 .I SIGTERM
@@ -75,10 +79,14 @@ If sent to Portfwd master process (the one with lowest PID), the TERM
 signal terminates the whole forwarding job.
 .SH "SEE ALSO"
 .TP
-.IR "http://sourceforge.net/projects/portfwd/"
+.IR "http://portfwd.sf.net"
 Portfwd web site at SourceForge.
+.br
+.TP
+portfwd.cfg(5)
+Portfwd configuration reference.
 .SH AUTHOR
 Manual page loosely written by
 .br
-Éverton da Silva Marques <evertonm@my-deja.com>
+Éverton da Silva Marques <evertonsm at yahoo dot com dot br>
 
