@@ -68,8 +68,8 @@ REAL_CC = @REAL_CC@
 VERSION = @VERSION@
 YACC = @YACC@
 
-CXXFLAGS = -Wall -g -O3
-CFLAGS = -Wall -g -O3
+CXXFLAGS = -Wall -ggdb -O3
+CFLAGS = -Wall -ggdb -O3
 INCLUDES = -I$(top_srcdir)/src
 
 sbin_PROGRAMS = portfwd
