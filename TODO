@@ -14,13 +14,17 @@ TODO:
 CHANGES:
 
 ----
-0.22
+0.23
 ----
 
 - Marc Merlin <marc@merlins.org> suggestions:
   - Transparent proxy control per ruleset.
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
+
+----
+0.22
+----
 
 + Patrik Radman fix for UDP transparent proxy.
 + Applied Patrick Tullmann's patch to compile on FreeBSD-5.0-CURRENT.

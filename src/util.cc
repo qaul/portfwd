@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.2 2001/09/21 14:02:42 evertonm Exp $
+  $Id: util.cc,v 1.3 2001/09/21 17:00:47 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -97,7 +97,7 @@ int close_fds() {
   /*
    * Fecha todos os descritores abertos.
    */
-  int fd;
+  unsigned int fd;
   if (rl.rlim_max == RLIM_INFINITY)
     rl.rlim_max = 1024;
   for (fd = 0; fd < rl.rlim_max; ++fd)
