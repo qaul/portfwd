@@ -16,13 +16,19 @@ TODO:
 CHANGES:
 
 ----
-0.21
+0.22
 ----
 
 - Marc Merlin <marc@merlins.org> suggestions:
   - Transparent proxy control per ruleset.
   - Issue fatal errors to stderr.
   - Try to bind to local address multiple times (specified by user).
+
+----
+0.21
+----
+
++ Anonymous fixes for compilation under Mandrake 8.0 (gcc 2.96 20000731).
 
 ----
 0.20

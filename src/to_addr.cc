@@ -1,11 +1,12 @@
 /*
   to_addr.cc
 
-  $Id: to_addr.cc,v 1.2 2001/07/08 04:25:48 evertonm Exp $
+  $Id: to_addr.cc,v 1.3 2001/07/11 23:59:56 evertonm Exp $
  */
 
 #include <syslog.h>
 #include <stdlib.h>
+#include <string.h>
 #include "util.h"
 #include "addr.h"
 #include "to_addr.hpp"
