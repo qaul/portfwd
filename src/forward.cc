@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.10 2003/02/16 08:10:52 evertonm Exp $
+  $Id: forward.cc,v 1.11 2004/01/28 19:14:10 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -567,7 +567,112 @@ void close_sockets(vector<int> *port_list)
   DEBUGFD(syslog(LOG_DEBUG, "close_sockets(): Sockets closed: %d", port_list->get_size()));
 }
 
-void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_map*> *map_list, const struct ip_addr *src)
+
+class sleeper {
+private:
+  static sleeper *sleepers;
+  static sleeper *tail;
+
+  time_t timeout;
+  host_map *hm;
+  struct sockaddr_in cli_sa;
+  struct ip_addr ip;
+  int cli_port;
+  const struct ip_addr *src;
+  struct sockaddr_in local_cli_sa;
+  int csd;
+  fd_set *fds;
+  int *maxfd;
+  int *dest_fd;
+
+  sleeper *next;
+
+public:
+  sleeper(host_map *hm, struct sockaddr_in *cli_sa, struct ip_addr *ip,
+          int cli_port, const struct ip_addr *src, struct sockaddr_in *local_cli_sa,
+          int csd, fd_set *fds, int *dest_fd, int *maxfd) {
+    this->hm = hm;
+    this->cli_sa = *cli_sa;
+    this->ip = *ip;
+    this->cli_port = cli_port;
+    this->src = src;
+    this->local_cli_sa = *local_cli_sa;
+    this->csd = csd;
+    this->fds = fds;
+    this->dest_fd = dest_fd;
+    this->maxfd = maxfd;
+    this->next = NULL;
+  }
+
+  void queue() {
+    this->timeout = time(NULL) + 10;
+    if (tail)
+      tail->next = this;
+    else
+      sleepers = tail = this;
+  }
+
+  int pipe() {
+    int rsd = 0;
+    socklen_t cli_sa_len = sizeof(cli_sa);
+
+    if (hm->pipe(&rsd, &cli_sa, cli_sa_len, &ip, cli_port, src, &local_cli_sa)) {
+      return 1;
+    }
+
+    if ((csd >= MAX_FD) || (rsd >= MAX_FD)) {
+      syslog(LOG_ERR, "Destination socket descriptors overflow");
+      socket_close(csd);
+      socket_close(rsd);
+      return 0;
+    }
+
+    /*
+     * Add pair of communicating sockets.
+     */
+    fdset(csd, fds, maxfd);
+    fdset(rsd, fds, maxfd);
+  
+    /*
+     * Save peers so they can be remembered later.
+     */
+    dest_fd[csd] = rsd;
+    dest_fd[rsd] = csd;
+    return 0;
+  }
+
+  static void handle_first() {
+    sleeper *s = sleepers;
+    sleepers = sleepers->next;
+    if (sleepers == NULL)
+      tail = NULL;
+    if (s->pipe()) {
+      s->queue();
+    } else {
+      delete s;
+    }
+  }
+
+  static int ready() {
+    return sleepers != NULL && sleepers->timeout <= time(NULL);
+  }
+
+  static int queued() {
+    return sleepers != NULL;
+  }
+
+  static time_t earliest() {
+    return sleepers->timeout;
+  }
+
+};
+
+
+sleeper *sleeper::sleepers = NULL;
+sleeper *sleeper::tail = NULL;
+
+
+void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_map*> *map_list, const struct ip_addr *src, int fragile)
 {
   struct sockaddr_in cli_sa;
   socklen_t cli_sa_len = sizeof(cli_sa);
@@ -614,31 +719,17 @@ void mother_socket(int sd, fd_set *fds, int dest_fd[], int *maxfd, vector<host_m
   /*
    * Connect to destination on "rsd"
    */
-  int rsd = -1;
-  if (hm->pipe(&rsd, &cli_sa, cli_sa_len, &ip, cli_port, src, &local_cli_sa)) {
-    ONVERBOSE(syslog(LOG_DEBUG, "Could not connect to remote destination"));
-    socket_close(csd);
-    return;
+  sleeper *s = new sleeper(hm, &cli_sa, &ip, cli_port, src, &local_cli_sa,
+                           csd, fds, dest_fd, maxfd);
+  if (s->pipe()) {
+    if (fragile)
+      s->queue();
+    else {
+      ONVERBOSE(syslog(LOG_DEBUG, "Could not connect to remote destination"));
+      socket_close(csd);
+      delete s;
+    }
   }
-  
-  if ((csd >= MAX_FD) || (rsd >= MAX_FD)) {
-    syslog(LOG_ERR, "Destination socket descriptors overflow");
-    socket_close(csd);
-    socket_close(rsd);
-    return;
-  }
-
-  /*
-   * Add pair of communicating sockets.
-   */
-  fdset(csd, fds, maxfd);
-  fdset(rsd, fds, maxfd);
-  
-  /*
-   * Save peers so they can be remembered later.
-   */
-  dest_fd[csd] = rsd;
-  dest_fd[rsd] = csd;
 }
 
 void client_socket(int src_fd, fd_set *fds, int dest_fd[], int *maxfd, const struct ip_addr *actv_ip, const struct ip_addr *pasv_ip)
@@ -663,7 +754,9 @@ void client_socket(int src_fd, fd_set *fds, int dest_fd[], int *maxfd, const str
   }
 }
 
-void tcp_forward(const struct ip_addr *listen, const struct ip_addr *source, vector<int> *port_list, vector<host_map*> *map_list, const struct ip_addr *actv_ip, const struct ip_addr *pasv_ip, int uid, int gid)
+void tcp_forward(const struct ip_addr *listen, const struct ip_addr *source, vector<int> *port_list,
+                 vector<host_map*> *map_list, const struct ip_addr *actv_ip, const struct ip_addr *pasv_ip,
+                 int uid, int gid, int fragile)
 {
   fd_set fds, tmp_fds, ms_fds;
   int fd_set_len = sizeof(fd_set);
@@ -702,22 +795,34 @@ void tcp_forward(const struct ip_addr *listen, const struct ip_addr *source, vec
      */
     memcpy(&tmp_fds, &fds, fd_set_len);
 
+    struct timeval tv;
+    struct timeval *tvp = NULL;
+    if (sleeper::queued()) {
+      time_t now = time(NULL);
+      tv.tv_sec = MAX(sleeper::earliest() - now, 0);
+      tv.tv_usec = 0;
+      tvp = &tv;
+    }
+
     /*
      * Wait for event: connection on mother sockets or data on anything else.
      */
     DEBUGFD(syslog(LOG_DEBUG, "TCP select(): %d FDs", maxfd));
-    int nd = select(maxfd, &tmp_fds, 0, 0, 0);
+    int nd = select(maxfd, &tmp_fds, 0, 0, tvp);
     if (nd == -1) {
       if (errno != EINTR)
 	syslog(LOG_ERR, "TCP select() failed: %m");
       continue;
     }
 
+    while (sleeper::ready())
+        sleeper::handle_first();
+
     for (int fd = 0; nd; ++fd)
       if (FD_ISSET(fd, &tmp_fds)) {
 	--nd;
 	if (FD_ISSET(fd, &ms_fds))
-	  mother_socket(fd, &fds, dest_fd, &maxfd, map_list, source);
+	  mother_socket(fd, &fds, dest_fd, &maxfd, map_list, source, fragile);
 	else
 	  client_socket(fd, &fds, dest_fd, &maxfd, actv_ip, pasv_ip);
       }

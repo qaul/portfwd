@@ -1,7 +1,7 @@
 /*
   proto_map.cc
 
-  $Id: proto_map.cc,v 1.3 2002/03/26 03:51:14 evertonm Exp $
+  $Id: proto_map.cc,v 1.4 2004/01/28 19:14:10 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -14,6 +14,7 @@ proto_map::proto_map(vector<int> *port_l, vector<host_map*> *map_l, struct ip_ad
 {
   port_list  = port_l;
   map_list   = map_l;
+  fragile    = 0; /* false */
 
   ftp_actv   = (int) actv;
   if (ftp_actv)
@@ -33,6 +34,11 @@ proto_map::proto_map(vector<int> *port_l, vector<host_map*> *map_l, struct ip_ad
   }
   else
     local_src = 0;
+}
+
+void proto_map::set_fragile(bool b)
+{
+  this->fragile = b;
 }
 
 void proto_map::show() const
@@ -83,7 +89,7 @@ void proto_map::serve(proto_t proto) const
 
   switch (proto) {
   case P_TCP:
-    tcp_forward(listen, local_src, port_list, map_list, ftp_actv ? &actv_ip : 0, ftp_pasv ? &pasv_ip : 0, uid, gid);
+    tcp_forward(listen, local_src, port_list, map_list, ftp_actv ? &actv_ip : 0, ftp_pasv ? &pasv_ip : 0, uid, gid, fragile);
     break;
 
   case P_UDP:

@@ -1,7 +1,7 @@
 /*
   conf.lex
 
-  $Id: conf.lex,v 1.3 2002/05/05 08:55:52 evertonm Exp $
+  $Id: conf.lex,v 1.4 2004/01/28 19:14:10 evertonm Exp $
  */
 
 %{
@@ -99,6 +99,7 @@ NAME		[a-zA-Z0-9][a-zA-Z0-9_.-]*
 
 tcp		return trap_tk(TK_TCP);
 udp		return trap_tk(TK_UDP);
+fragile        return trap_tk(TK_FRAGILE);
 
 ":"		return trap_tk(TK_COLON);
 ";"   		return trap_tk(TK_SCOLON);

@@ -1,7 +1,7 @@
 /*
   conf.y
 
-  $Id: conf.y,v 1.5 2002/05/05 08:55:52 evertonm Exp $
+  $Id: conf.y,v 1.6 2004/01/28 19:14:10 evertonm Exp $
 */
 
 %{
@@ -128,11 +128,13 @@ to_addr *use_dstaddr(char *hostname, int port)
 %token TK_LISTEN
 %token TK_SOURCE
 %token TK_STRING
+%token TK_FRAGILE
 
 %token TK_ILLEGAL
 
 %union {
 	int	           int_type;
+  	bool               bool_type;
         char               *str_type;
         port_pair          *port_type;
         net_portion        *net_type;
@@ -149,6 +151,7 @@ to_addr *use_dstaddr(char *hostname, int port)
 }
 
 %type <int_type>	prefix_length;
+%type <bool_type>	fragile;
 %type <port_type>       port_range;
 %type <str_type>        name;
 %type <net_type>        host_prefix;
@@ -190,8 +193,11 @@ global_option:  TK_USER TK_NAME { conf_user = solve_user(conf_ident); } |
 		} |
 		TK_BIND TK_NAME { conf_listen = solve_hostname(conf_ident); };
 
-entry:		TK_TCP set_proto_tcp section { $$ = new entry(P_TCP, $3); } | 
-         	TK_UDP set_proto_udp section { $$ = new entry(P_UDP, $3); };
+entry:         fragile TK_TCP set_proto_tcp section { $$ = new entry(P_TCP, $4, $1); } | 
+                       TK_UDP set_proto_udp section { $$ = new entry(P_UDP, $3, 0 /* false */); } ;
+
+fragile: /* empty */ { $$ = 0; /* false */ } |
+         TK_FRAGILE { $$ = 1; /* true */ } ;
 
 set_proto_tcp:	{ set_protoname(P_TCP); } ;
 set_proto_udp:  { set_protoname(P_UDP); } ;

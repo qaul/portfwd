@@ -1,7 +1,7 @@
 /*
   proto_map.hpp
 
-  $Id: proto_map.hpp,v 1.2 2001/11/19 19:34:44 evertonm Exp $
+  $Id: proto_map.hpp,v 1.3 2004/01/28 19:14:10 evertonm Exp $
  */
 
 #ifndef PROTO_MAP_HPP
@@ -25,6 +25,7 @@ private:
   struct ip_addr    local_listen;
   struct ip_addr    local_source;
   struct ip_addr    *local_src;
+  bool              fragile;
 
 public:
   proto_map(vector<int> *port_l, vector<host_map*> *map_l, struct ip_addr *actv, struct ip_addr *pasv, int user, int group, struct ip_addr listen, struct ip_addr *source);
@@ -32,6 +33,8 @@ public:
   void show() const;
 
   void serve(proto_t proto) const;
+
+  void set_fragile(bool b);
 };
 
 #endif /* PROTO_MAP_HPP */
