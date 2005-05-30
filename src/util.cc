@@ -1,7 +1,7 @@
 /*
   util.c
 
-  $Id: util.cc,v 1.10 2003/12/30 17:29:45 evertonm Exp $
+  $Id: util.cc,v 1.11 2005/05/30 02:13:28 evertonm Exp $
  */
 
 #include <stdarg.h>
@@ -81,23 +81,6 @@ int cd_root() {
   }
 
   return 0;
-}
-
-void close_fds(int first_fds) {
-  const int LOCAL_MAXFD = 2048;
-
-  struct rlimit rl;
-  if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
-    rl.rlim_max = LOCAL_MAXFD;
-  
-  unsigned int fd;
-  if (rl.rlim_max == RLIM_INFINITY)
-    rl.rlim_max = LOCAL_MAXFD;
-
-  for (fd = first_fds; fd < rl.rlim_max; ++fd)
-    close(fd);
-
-  errno = 0; /* close() on invalid fd */
 }
 
 int std_to_null() {
@@ -183,25 +166,5 @@ void socket_close(int fd)
   if (close(fd))
     syslog(LOG_ERR, "socket_close(): close() on socket FD %d failed: %m", fd);
 }
-
-void fdset(int fd, fd_set *fds, int *maxfd)
-{
-  FD_SET(fd, fds);
-  *maxfd = MAX(*maxfd, fd + 1);
-}
-
-void fdclear(int fd, fd_set *fds, int *maxfd)
-{
-  int i;
-
-  FD_CLR(fd, fds);
-  
-  for (i = *maxfd - 1; i >= 0; --i)
-    if (FD_ISSET(i, fds))
-      break;
-
-  *maxfd = i + 1;
-}
-
 
 /* eof: util.c */

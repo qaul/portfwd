@@ -1,7 +1,7 @@
 /*
   director.cc
 
-  $Id: director.cc,v 1.9 2002/07/11 14:33:00 evertonm Exp $
+  $Id: director.cc,v 1.10 2005/05/30 02:13:28 evertonm Exp $
  */
 
 
@@ -20,6 +20,7 @@
 #include "solve.h"
 #include "vector.hpp"
 #include "director.hpp"
+#include "fd_set.h"
 
 
 void director::close_sockets()

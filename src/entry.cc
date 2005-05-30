@@ -1,7 +1,7 @@
 /*
   entry.cc
 
-  $Id: entry.cc,v 1.1 2001/05/15 00:24:58 evertonm Exp $
+  $Id: entry.cc,v 1.2 2005/05/30 02:13:28 evertonm Exp $
  */
 
 #include <unistd.h>
@@ -15,6 +15,7 @@
 #include "entry.hpp"
 #include "portfwd.h"
 #include "forward.h"
+#include "fd_set.h"
 
 void grandchild_reaper(int sig)
 {
@@ -27,7 +28,7 @@ void grandchild_reaper(int sig)
     return;
   }
   
-  for (int fd = 0; fd < MAX_FD; ++fd)
+  for (int fd = 0; fd < PORTFWD_MAX_FD; ++fd)
     if (grandchild_pid[fd] == gchild_pid)
       grandchild_pid[fd] = -1;
 

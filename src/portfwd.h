@@ -1,15 +1,13 @@
 /*
   portfwd.h
 
-  $Id: portfwd.h,v 1.4 2002/04/20 04:32:35 evertonm Exp $
+  $Id: portfwd.h,v 1.5 2005/05/30 02:13:28 evertonm Exp $
  */
 
 #ifndef PORTFWD_H
 #define PORTFWD_H
 
 #include "config.h"
-
-#define MAX_FD 256
 
 extern const int BUF_SZ;
 extern const char * const portfwd_version;

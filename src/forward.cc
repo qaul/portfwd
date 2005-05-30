@@ -1,7 +1,7 @@
 /*
   forward.c
 
-  $Id: forward.cc,v 1.11 2004/01/28 19:14:10 evertonm Exp $
+  $Id: forward.cc,v 1.12 2005/05/30 02:13:28 evertonm Exp $
  */
 
 #include <stdlib.h>
@@ -23,7 +23,7 @@
 #include "host_map.hpp"
 #include "iterator.hpp"
 
-int grandchild_pid[MAX_FD];
+int grandchild_pid[PORTFWD_MAX_FD];
 
 /*
  * Returns -1 on failure; file descriptor on success.
@@ -101,7 +101,7 @@ int simple_buf_copy(int src_fd, int trg_fd)
 
 void simple_tcp_forward(int sd, struct ip_addr *remote_ip, int remote_port)
 {
-  int dest_fd[MAX_FD];
+  int dest_fd[PORTFWD_MAX_FD];
 
   fd_set fds, tmp_fds;
   int fd_set_len = sizeof(fd_set);
@@ -154,7 +154,7 @@ void simple_tcp_forward(int sd, struct ip_addr *remote_ip, int remote_port)
 	  
 	int rsd = tcp_connect(remote_ip, remote_port);
 	if (rsd != -1) {
-	  if ((csd >= MAX_FD) || (rsd >= MAX_FD)) {
+	  if ((csd >= PORTFWD_MAX_FD) || (rsd >= PORTFWD_MAX_FD)) {
 	    syslog(LOG_ERR, "simple_forward: Destination socket descriptors overflow");
 	    socket_close(csd);
 	    socket_close(rsd);
@@ -620,7 +620,7 @@ public:
       return 1;
     }
 
-    if ((csd >= MAX_FD) || (rsd >= MAX_FD)) {
+    if ((csd >= PORTFWD_MAX_FD) || (rsd >= PORTFWD_MAX_FD)) {
       syslog(LOG_ERR, "Destination socket descriptors overflow");
       socket_close(csd);
       socket_close(rsd);
@@ -784,9 +784,9 @@ void tcp_forward(const struct ip_addr *listen, const struct ip_addr *source, vec
     return;
   }
 
-  int dest_fd[MAX_FD];
+  int dest_fd[PORTFWD_MAX_FD];
 
-  for (int fd = 0; fd < MAX_FD; ++fd)
+  for (int fd = 0; fd < PORTFWD_MAX_FD; ++fd)
     grandchild_pid[fd] = -1;
 
   for (;;) { /* forever */

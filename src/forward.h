@@ -1,7 +1,7 @@
 /*
   forward.h
 
-  $Id: forward.h,v 1.4 2004/01/28 19:14:10 evertonm Exp $
+  $Id: forward.h,v 1.5 2005/05/30 02:13:28 evertonm Exp $
  */
 
 #ifndef FORWARD_H
@@ -10,8 +10,9 @@
 #include "solve.h"
 #include "host_map.hpp"
 #include "portfwd.h"
+#include "fd_set.h"
 
-extern int grandchild_pid[MAX_FD];
+extern int grandchild_pid[PORTFWD_MAX_FD];
 
 int buf_copy(int src_fd, int trg_fd, int pasv);
 int tcp_listen(const struct ip_addr *ip, int *port, int queue);

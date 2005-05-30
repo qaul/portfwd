@@ -30,6 +30,7 @@ CHANGES:
 ----
 
 + 'fragile' keyword added by Eric Duda.
++ FD_SETSIZE used by default fd limit in 'fd_set.h'.
 
 ----
 0.26

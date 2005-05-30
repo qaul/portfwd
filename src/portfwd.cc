@@ -1,7 +1,7 @@
 /*
   portfwd.c
 
-  $Id: portfwd.cc,v 1.7 2002/09/07 02:27:51 evertonm Exp $
+  $Id: portfwd.cc,v 1.8 2005/05/30 02:13:28 evertonm Exp $
  */
 
 #include <stdio.h>
@@ -21,6 +21,7 @@
 #include "iterator.hpp"
 #include "entry.hpp"
 #include "config.h"
+#include "fd_set.h"
 
 extern FILE           *yyin;
 extern int            yyparse();
