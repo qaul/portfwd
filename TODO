@@ -26,6 +26,12 @@ TODO:
 CHANGES:
 
 ----
+0.28
+----
+
++ Compilation fix for g++ 3.4.
+
+----
 0.27
 ----
 

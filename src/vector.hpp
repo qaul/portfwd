@@ -1,6 +1,6 @@
 // vector.hpp
 //
-// $Id: vector.hpp,v 1.4 2002/09/06 18:04:04 evertonm Exp $
+// $Id: vector.hpp,v 1.5 2005/06/28 21:46:27 evertonm Exp $
 
 
 #ifndef VECTOR_HPP
@@ -12,6 +12,10 @@
 #include "iterator.hpp"
 #include "util.hpp"
 
+
+template <typename T> class vector;
+
+template <typename T> std::ostream& operator << (std::ostream& out, const vector<T>& v);
 
 template <class T>
 class vector
@@ -42,7 +46,7 @@ public:
 
   T& top();
 
-    void cut(T& info);
+  void cut(T& info);
   void cut_at(int size);
 
   void drop(T& info);
@@ -52,7 +56,7 @@ public:
   T *past_end_ptr() const;
   static T *next_ptr(T *i);
 
-  friend std::ostream& operator << <T> (std::ostream& out, const vector& v);
+  friend std::ostream& operator << <T> (std::ostream& out, const vector<T>& v);
 };
 
 template <class T>
