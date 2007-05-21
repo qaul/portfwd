@@ -1,7 +1,7 @@
 /*
   proto_map.cc
 
-  $Id: proto_map.cc,v 1.4 2004/01/28 19:14:10 evertonm Exp $
+  $Id: proto_map.cc,v 1.5 2007/05/21 18:01:58 evertonm Exp $
  */
 
 #include <syslog.h>
@@ -16,11 +16,11 @@ proto_map::proto_map(vector<int> *port_l, vector<host_map*> *map_l, struct ip_ad
   map_list   = map_l;
   fragile    = 0; /* false */
 
-  ftp_actv   = (int) actv;
+  ftp_actv   = actv != NULL;
   if (ftp_actv)
     actv_ip = *actv;
 
-  ftp_pasv   = (int) pasv;
+  ftp_pasv   = pasv != NULL;
   if (ftp_pasv)
     pasv_ip = *pasv;
 

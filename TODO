@@ -26,6 +26,12 @@ TODO:
 CHANGES:
 
 ----
+0.29
+----
+
++ Fix compilation on 64-bit linux, bug 1722252, patch by Jose - agatocles
+
+----
 0.28
 ----
 
