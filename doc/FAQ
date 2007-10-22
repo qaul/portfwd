@@ -3,7 +3,7 @@
 #
 # portfwd - Port Forwarding Daemon
 #
-# $Id: FAQ,v 1.4 2002/05/05 05:27:49 evertonm Exp $
+# $Id: FAQ,v 1.5 2007/10/22 21:51:21 evertonm Exp $
 #
 
 
@@ -42,8 +42,10 @@ A: There are two approaches:
 	 80 { => host1:8080, host2:80, host2:80, host3:80 }
       }
 
-      In this example, 1/4 of the connections are forwarded
-      to host1:80, 2/4 to host2:80 and 1/4 to host3.
+      In this example, connections are forwarded as follows:
+        1/4 to host1:8080
+        2/4 to host2:80
+        1/4 to host3:80
 
    It's also possible to combine both methods.
 
